@@ -53,3 +53,15 @@ If Gemma is unreachable, the chat says so explicitly. **It never shows a canned 
 **Model license:** [Gemma Terms of Use](https://ai.google.dev/gemma/terms). **Code license:** MIT (`LICENSE`).
 
 The repository match scores, maintainer metrics (median time to merge, merge ratio over the last 30 closed PRs, cadence) and issue difficulty are deterministic and computed from real GitHub data. Anything not measured is shown as "Not measured". See `backend/README.md` for the algorithms, the security model and the tests (`npm test`, 32 tests).
+
+## Deploy on Render
+
+The repository includes extracted source under `orbit/` and a `render.yaml` Blueprint for a Node web service and PostgreSQL database in the same region.
+
+1. Sign in to Render and create a Blueprint using this repository.
+2. Enter `GOOGLE_API_KEY` through Render's secret configuration (never commit it). Optionally add `GITHUB_TOKEN` to the web service environment for higher GitHub API allowance.
+3. Review the plans and deploy. The configuration requests free instances; check current account eligibility and limitations before confirming any charges.
+4. Database migrations and the learning-resource seed run before server startup. No demo account is created.
+5. Verify `/api/health`, repository discovery, and an Orbit AI reply at the resulting service URL.
+
+The frontend's prebuilt assets are served by the same Node process. PostgreSQL external access is disabled. Session cookies use HTTPS. This is a demo deployment configuration: free services can sleep and free databases have expiry/usage limits; check Render's current terms before relying on it for durable hosting.

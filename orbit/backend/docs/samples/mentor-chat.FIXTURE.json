@@ -1,0 +1,10 @@
+{
+  "_note": "LABELLED FIXTURE — shape of POST /api/mentor/chat once Gemma is configured. Values illustrative.",
+  "answer": "**What the issue asks:** the Button should not fire clicks when `disabled` is set [S1].\n\n**Documented steps:** fork the repo and create a branch, then run the tests before opening a PR [S3].\n\n**Suggested:** reproduce it locally first, then write a failing test.",
+  "sources": [
+    { "id": "S1", "title": "Issue #42: Button component ignores disabled prop", "url": "https://github.com/example-org/widgets/issues/42" },
+    { "id": "S3", "title": "example-org/widgets CONTRIBUTING.md", "url": "https://github.com/example-org/widgets/blob/HEAD/CONTRIBUTING.md" }
+  ],
+  "caveats": ["I have not seen the source code, so I can't point to the exact file."],
+  "model": { "provider": "google", "id": "gemma-3-27b-it", "latencyMs": 2140 }
+}
