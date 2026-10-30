@@ -1,52 +1,55 @@
-# Repo Match — Version 0 (v0.0.0)
+# Orbit: open-source discovery, contribution roadmaps and Google Gemma AI
 
-Requires Node.js 22+. No dependencies, database, or build step. A Google API key is required for Gemma features.
+Orbit helps students who know basic coding make their **first open-source contribution**. It recommends real GitHub repositories with beginner issues that match your stack, generates a step-by-step contribution roadmap grounded in each repo's own README/CONTRIBUTING, and gives you an AI mentor. **All of the AI in the product is Google Gemma, an open-weight model.**
 
-```sh
-cd repo-match-v0
-npm start
+```
+orbit/
+  backend/    Node.js + PostgreSQL + Gemma. Serves the API at /api AND the compiled frontend at /
+  frontend/   React + Vite + Tailwind (Orbit UI) source
 ```
 
-Open http://localhost:3000. Select 1–3 skills and experience, then search.
+## Run everything (one server, one URL)
 
-Optional: copy `.env.example` to `.env` and supply `GITHUB_TOKEN` for a larger GitHub API allowance. Public data only; no repository write permissions needed. The token stays on the server and is never returned to the browser. Restart after changing .env. Without a token a search may exhaust the unauthenticated allowance; cached responses last 5 minutes.
+Requirements: Node 20+, PostgreSQL 13+. Gemma runs through **Ollama** (local) or a **Google AI Studio** key.
 
-## Matching
-Search each selected language/topic independently for public, nonarchived, nonfork repositories pushed within the past year, sorted by recent update. Each candidate batch reads four search hits per skill and analyzes at most six unique repositories with issues enabled. This is a bounded discovery MVP, not an exhaustive GitHub index. Results may match some rather than all skills, with partial coverage reflected in the score. Topic matching depends on repository topic metadata.
+```bash
+cd backend
+cp .env.example .env        # set DATABASE_URL, GITHUB_TOKEN, and the Gemma settings (below)
+npm install
+npm run migrate
+npm run seed -- --verify --demo
+npm start                   # open http://localhost:4000
+```
 
-Weights: stack coverage 40; experience-aligned unassigned issue 30; latest push 15; median first maintainer review 15. Unknown review data gets zero points. Issue labels identify easy tasks; advanced labels/title keywords suggest hard tasks; unlabeled tasks default to medium with low confidence. README setup, test, contribution and complex-systems keywords provide separate evidence, not verified code analysis. No repository code is executed.
+`backend/public/` already contains a compiled build of the frontend, so you don't need to build it.
+After changing anything in `frontend/`, rebuild and re-copy it with:
+```bash
+cd backend && npm run build:frontend
+```
 
-Update cadence uses median gaps between 20 recent commits. Review time uses up to three latest-created pull requests, with up to 100 reviews each, counting the first review from OWNER/MEMBER/COLLABORATOR excluding the author and bots. Unreviewed PRs are excluded and the sample coverage is displayed. Fast review samples do not guarantee future response times. Issue recommendations sample 30 recently updated open items, excluding PRs and assigned issues.
+**Frontend dev mode (hot reload):** run `npm start` in `backend/` and `npm run dev` in `frontend/`, then open http://localhost:5173. Vite proxies `/api` to port 4000.
 
-GitHub REST endpoints: search/repositories, repos/{owner}/{repo}/readme, languages, issues, commits, pulls, pulls/{number}/reviews. Reference: https://docs.github.com/en/rest
+### Gemma (required for the AI features)
+| Option | `.env` |
+|---|---|
+| Local, with Ollama | `GEMMA_PROVIDER=ollama`, `GEMMA_MODEL=gemma3:4b` (first run `ollama pull gemma3:4b`; on a low-RAM laptop use `gemma3:1b`) |
+| Google AI Studio | `GEMMA_PROVIDER=google`, `GEMMA_MODEL=gemma-3-27b-it`, `GOOGLE_API_KEY=...` |
 
-`npm test` checks scoring, missing data and difficulty classification. Server binds to 127.0.0.1 only. Errors and partial evidence are shown explicitly. No demo or fabricated repositories are returned.
+Check it with `curl localhost:4000/api/health`, which should show `"gemma":"ready"`.
 
-## Google Gemma chatbot and summaries
+### GitHub token (strongly recommended)
+Repository discovery calls GitHub's search API. Anonymous access allows only ~10 searches per minute and 60 requests per hour, which isn't enough for a live demo. Create a token at GitHub → Settings → Developer settings → **Fine-grained token**, with **no permissions** (public read is enough), and put it in `GITHUB_TOKEN=`.
 
-Set `GOOGLE_API_KEY` in `.env`, then restart. The server uses Google's Generative Language API with a **Gemma** model (never silently switches to Gemini). It lists available models and prefers Gemma 4 26B A4B, Gemma 4 31B, then Gemma 3 27B. Set `GEMMA_MODEL` to a specific Gemma model ID to override discovery. Project IDs are not API keys and are not needed for this API-key authentication flow.
+## Where Gemma does the core work
+| Feature | UI | API | What Gemma does |
+|---|---|---|---|
+| Contribution roadmap | "Roadmap" on a repository | `GET /api/repositories/:owner__repo/roadmap` | Writes a 5-step first-contribution plan from the repo's README and CONTRIBUTING. File names and commands that don't appear in those docs are removed. |
+| Orbit AI mentor | Orbit AI tab + floating chat | `POST /api/chat` | Answers questions grounded in the selected repo's docs, cites sources, and treats repo text as untrusted. |
+| Skill extraction, growth story | backend API (profile features) | `/api/me/skills/extract`, `/api/me/growth/story` | Structured extraction and narration of real data. |
 
-Click **Chat with Gemma** to ask coding questions. **Summarise with Gemma** on a repository card selects that repository and starts a summary; follow-up questions retain that context. **New chat** clears both context and history. The last five exchanges are sent with each question. Chat is kept in browser memory, not saved permanently.
+If Gemma is unreachable, the chat says so explicitly. **It never shows a canned "AI" answer.** The roadmap falls back to clearly labelled rule-based steps (`generatedBy: "rules"`).
 
-Repository summaries read the README (up to 14k characters), up to six selected manifests/contribution guides/source files (6k each), and up to 180 tree paths. The UI shows coverage, filenames and retrieval failures. This is not a full-repository audit and does not execute or verify repository code. Your chat and those public excerpts are sent to Google only when you ask. Repository evidence is treated as untrusted text. Output is displayed as plain text, never executed as HTML. API keys stay in the ignored server .env and are not placed in prompts, URLs or responses.
+**Model:** Google Gemma 3 (the exact ID is shown in every chat reply and in `/api/health`).
+**Model license:** [Gemma Terms of Use](https://ai.google.dev/gemma/terms). **Code license:** MIT (`LICENSE`).
 
-Provider access, quota, model availability and network errors are shown in the chat. A configured key is not proof that Google accepts it. Tests mock Google/GitHub responses; live provider access must be verified separately.
-
-## Download and run version 0
-
-Download [repo-match-v0.zip](./repo-match-v0.zip), extract it, and open a terminal in the extracted `repo-match-v0` folder.
-Copy `.env.example` to `.env`, add your own `GOOGLE_API_KEY`, then run `npm start`. Keep the terminal open and visit http://localhost:3000.
-If port 3000 is occupied, set `PORT=3001` in `.env` and visit http://localhost:3001.
-API keys are excluded from the archive. Never commit `.env`.
-This project requires a running Node.js server; GitHub Pages alone cannot host its backend.
-
-## Model licensing
-
-- Gemma 4: [Apache License 2.0](https://ai.google.dev/gemma/apache_2).
-- If configured or automatically selected: Gemma 3 uses [Gemma Terms of Use](https://ai.google.dev/gemma/terms).
-- Hosted API usage is also subject to the provider terms. These links describe model licensing, not this application's license; see the repository LICENSE file for application licensing.
-
-## Version 0 limitations
-
-Matching and summaries use bounded repository samples. They do not verify execution or audit the full codebase.
-Eight automated tests cover matching, chat validation, Gemma selection and file sampling. Live chat and a limited repository summary previously succeeded; later sessions encountered local server lifetime and upstream access issues. Availability depends on your network and provider credentials/quota.
+The repository match scores, maintainer metrics (median time to merge, merge ratio over the last 30 closed PRs, cadence) and issue difficulty are deterministic and computed from real GitHub data. Anything not measured is shown as "Not measured". See `backend/README.md` for the algorithms, the security model and the tests (`npm test`, 32 tests).
