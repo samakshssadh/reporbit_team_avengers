@@ -297,7 +297,7 @@ class OrbitApiService {
     } catch (err: any) {
       if (err.name === "AbortError") throw err;
       return {
-        message: "⚠️ **The Orbit backend is not reachable**, so Gemma cannot answer right now. Start the backend (`npm start`) and try again. This is not an AI response.",
+        message: "⚠️ **The Reporbit server is not reachable**, so Gemma cannot answer right now. Start the backend (`npm start`) and try again. This is not an AI response.",
         model: "Google Gemma (offline)",
         isMock: false,
       };

@@ -5,7 +5,8 @@ services:
     plan: free
     region: singapore
     rootDir: orbit/backend
-    buildCommand: npm ci --omit=dev
+    # Compiles the React frontend, copies it into backend/public, then installs the backend.
+    buildCommand: cd ../frontend && npm ci --include=dev && npm run build && rm -rf ../backend/public && cp -r dist ../backend/public && cd ../backend && npm ci --omit=dev
     startCommand: npm run migrate && npm run seed && npm start
     healthCheckPath: /api/health
     envVars:
@@ -24,6 +25,8 @@ services:
       - key: GEMMA_MODEL
         value: gemma-4-26b-a4b-it
       - key: GOOGLE_API_KEY
+        sync: false
+      - key: GITHUB_TOKEN
         sync: false
 
 databases:

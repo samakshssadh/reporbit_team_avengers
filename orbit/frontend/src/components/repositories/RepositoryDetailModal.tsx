@@ -1,22 +1,7 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Repository } from "../../types";
-import {
-  X,
-  ExternalLink,
-  Sparkles,
-  Map,
-  Star,
-  GitFork,
-  Clock,
-  Calendar,
-  CheckCircle2,
-  Terminal,
-  HelpCircle,
-  FileCode2,
-  ChevronRight,
-  ShieldCheck,
-  Zap,
-} from "lucide-react";
+import { X, ExternalLink, Sparkles, Map, Star, GitFork, Clock, Users, Activity, GitMerge, CircleDot, FileText, Layers } from "lucide-react";
 import { formatNumber, formatRelativeTime, isSafeUrl } from "../../lib/utils";
 
 interface RepositoryDetailModalProps {
@@ -26,266 +11,178 @@ interface RepositoryDetailModalProps {
   onProceedWithRoadmap: (repo: Repository) => void;
 }
 
-export const RepositoryDetailModal: React.FC<RepositoryDetailModalProps> = ({
-  repository,
-  onClose,
-  onExplainWithAI,
-  onProceedWithRoadmap,
-}) => {
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && repository) {
-        onClose();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [repository, onClose]);
+const TABS = ["Overview", "Why it fits you", "Good first issues"] as const;
+type Tab = typeof TABS[number];
 
-  if (!repository) return null;
-
-  const scoreColor =
-    repository.matchScore >= 90
-      ? "text-emerald-700 bg-emerald-50 dark:text-emerald-300 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800"
-      : repository.matchScore >= 80
-      ? "text-indigo-700 bg-indigo-50 dark:text-indigo-300 dark:bg-indigo-950/50 border-indigo-200 dark:border-indigo-800"
-      : "text-amber-700 bg-amber-50 dark:text-amber-300 dark:bg-amber-950/50 border-amber-200 dark:border-amber-800";
-
+const ScoreRing: React.FC<{ score: number }> = ({ score }) => {
+  const r = 42, c = 2 * Math.PI * r;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div
-        className="w-full max-w-2xl bg-white dark:bg-space-900 rounded-3xl shadow-2xl border border-border overflow-hidden flex flex-col max-h-[90vh]"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="repo-detail-title"
-      >
-        {/* Modal Top Header */}
-        <div className="px-6 py-5 border-b border-border bg-neutral-50/50 dark:bg-neutral-900/40 flex items-start justify-between">
-          <div className="space-y-1 pr-4">
-            <div className="flex items-center space-x-2">
-              <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
-                {repository.owner}
-              </span>
-              <span className="text-muted-foreground">/</span>
-              <span className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold border ${scoreColor}`}>
-                {repository.matchScore}% Match
-              </span>
-            </div>
-            <h2 id="repo-detail-title" className="text-xl font-bold text-neutral-900 dark:text-white tracking-tight">
-              {repository.name}
-            </h2>
-          </div>
-
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl text-muted-foreground hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-            aria-label="Close dialog"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Scrollable Body */}
-        <div className="px-6 py-5 space-y-6 overflow-y-auto flex-1">
-          {/* Description */}
-          <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">
-            {repository.description}
-          </p>
-
-          {/* Key Metrics Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 border border-border/80">
-              <div className="text-[11px] text-muted-foreground flex items-center space-x-1 mb-1">
-                <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                <span>Stars</span>
-              </div>
-              <div className="text-sm font-semibold font-mono text-neutral-900 dark:text-white">
-                {formatNumber(repository.stars)}
-              </div>
-            </div>
-
-            <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 border border-border/80">
-              <div className="text-[11px] text-muted-foreground flex items-center space-x-1 mb-1">
-                <Clock className="w-3.5 h-3.5 text-indigo-500" />
-                <span>Review Speed</span>
-              </div>
-              <div className="text-sm font-semibold font-mono text-neutral-900 dark:text-white">
-                {repository.maintainerMetrics.medianReviewTime}
-              </div>
-            </div>
-
-            <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 border border-border/80">
-              <div className="text-[11px] text-muted-foreground flex items-center space-x-1 mb-1">
-                <Calendar className="w-3.5 h-3.5 text-blue-500" />
-                <span>Cadence</span>
-              </div>
-              <div className="text-sm font-semibold font-mono text-neutral-900 dark:text-white">
-                {repository.maintainerMetrics.cadence}
-              </div>
-            </div>
-
-            <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 border border-border/80">
-              <div className="text-[11px] text-muted-foreground flex items-center space-x-1 mb-1">
-                <Zap className="w-3.5 h-3.5 text-emerald-500" />
-                <span>Difficulty</span>
-              </div>
-              <div className="text-sm font-semibold font-mono text-neutral-900 dark:text-white truncate">
-                {repository.difficulty}
-              </div>
-            </div>
-          </div>
-
-          {/* Match Score Breakdown */}
-          <div className="p-4 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/40 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-indigo-900 dark:text-indigo-200 uppercase tracking-wider flex items-center space-x-1.5">
-                <ShieldCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                <span>Match Score Breakdown ({repository.matchScore}/100)</span>
-              </span>
-            </div>
-            <p className="text-xs text-indigo-950 dark:text-indigo-300 leading-normal">
-              {repository.scoreBreakdown.explanation}
-            </p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px] font-mono text-muted-foreground">
-              <div className="bg-white/80 dark:bg-space-900/80 p-2 rounded-lg border border-indigo-100 dark:border-indigo-900/50">
-                <span>Stack: </span>
-                <strong className="text-indigo-600 dark:text-indigo-400">{repository.scoreBreakdown.techStackOverlap}/40</strong>
-              </div>
-              <div className="bg-white/80 dark:bg-space-900/80 p-2 rounded-lg border border-indigo-100 dark:border-indigo-900/50">
-                <span>Difficulty: </span>
-                <strong className="text-indigo-600 dark:text-indigo-400">{repository.scoreBreakdown.difficultyFit}/25</strong>
-              </div>
-              <div className="bg-white/80 dark:bg-space-900/80 p-2 rounded-lg border border-indigo-100 dark:border-indigo-900/50">
-                <span>Activity: </span>
-                <strong className="text-indigo-600 dark:text-indigo-400">{repository.scoreBreakdown.activityAndResponsiveness}/20</strong>
-              </div>
-              <div className="bg-white/80 dark:bg-space-900/80 p-2 rounded-lg border border-indigo-100 dark:border-indigo-900/50">
-                <span>Docs: </span>
-                <strong className="text-indigo-600 dark:text-indigo-400">{repository.scoreBreakdown.documentationQuality}/15</strong>
-              </div>
-            </div>
-          </div>
-
-          {/* Languages & Matched Skills */}
-          <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-              Languages & Matched Skills
-            </h3>
-            <div className="flex flex-wrap gap-1.5">
-              {repository.languages.map((lang) => {
-                const isMatched = repository.matchedSkills.includes(lang);
-                return (
-                  <span
-                    key={lang}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-medium flex items-center space-x-1 ${
-                      isMatched
-                        ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 font-semibold border border-indigo-200 dark:border-indigo-800"
-                        : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-border"
-                    }`}
-                  >
-                    <span>{lang}</span>
-                    {isMatched && <CheckCircle2 className="w-3 h-3 text-indigo-600 dark:text-indigo-400" />}
-                  </span>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Setup Command */}
-          {repository.setupCommand && (
-            <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center space-x-1.5">
-                <Terminal className="w-3.5 h-3.5 text-muted-foreground" />
-                <span>Quick Setup Command</span>
-              </h3>
-              <div className="p-3 rounded-xl bg-neutral-900 text-neutral-100 font-mono text-xs overflow-x-auto flex items-center justify-between">
-                <code>{repository.setupCommand}</code>
-                <span className="text-[10px] text-neutral-400 uppercase font-sans">verified</span>
-              </div>
-            </div>
-          )}
-
-          {/* Good First Issues Sample */}
-          {repository.sampleIssues && repository.sampleIssues.length > 0 && (
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Open Good First Issues ({repository.goodFirstIssuesCount} Available)
-                </h3>
-              </div>
-              <div className="space-y-2">
-                {repository.sampleIssues.map((issue) => (
-                  <a
-                    key={issue.id}
-                    href={issue.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-3 rounded-xl border border-border hover:border-indigo-300 dark:hover:border-indigo-700 bg-neutral-50/50 dark:bg-neutral-800/40 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 transition-all flex items-center justify-between text-xs group"
-                  >
-                    <div className="space-y-1 pr-2">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-mono text-muted-foreground">#{issue.number}</span>
-                        <span className="font-medium text-neutral-900 dark:text-neutral-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                          {issue.title}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-1.5">
-                        {issue.labels.map((l) => (
-                          <span
-                            key={l}
-                            className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-neutral-200/60 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300"
-                          >
-                            {l}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform shrink-0" />
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Modal Actions Footer: 3 required actions */}
-        <div className="px-6 py-4 bg-neutral-50 dark:bg-neutral-900/60 border-t border-border flex flex-wrap items-center justify-between gap-3">
-          {/* Action 3: View on GitHub */}
-          {isSafeUrl(repository.url) && (
-            <a
-              href={repository.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center space-x-1.5 px-3 py-2 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white rounded-xl hover:bg-neutral-200/60 dark:hover:bg-neutral-800 transition-colors border border-border"
-            >
-              <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
-              <span>View on GitHub</span>
-            </a>
-          )}
-
-          <div className="flex items-center space-x-2.5">
-            {/* Action 1: Explain with Orbit AI */}
-            <button
-              type="button"
-              onClick={() => onExplainWithAI(repository)}
-              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800 transition-all"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Explain with Orbit AI</span>
-            </button>
-
-            {/* Action 2: Proceed with roadmap */}
-            <button
-              type="button"
-              onClick={() => onProceedWithRoadmap(repository)}
-              className="flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-600/20 transition-all"
-            >
-              <Map className="w-3.5 h-3.5" />
-              <span>Proceed with Roadmap</span>
-            </button>
-          </div>
-        </div>
+    <div className="relative w-28 h-28 shrink-0">
+      <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+        <defs>
+          <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#ffb15c" /><stop offset="60%" stopColor="#fe8500" /><stop offset="100%" stopColor="#ff3b66" /></linearGradient>
+        </defs>
+        <circle cx="50" cy="50" r={r} stroke="rgba(255,255,255,0.08)" strokeWidth="8" fill="none" />
+        <motion.circle cx="50" cy="50" r={r} stroke="url(#ring)" strokeWidth="8" fill="none" strokeLinecap="round"
+          strokeDasharray={c} initial={{ strokeDashoffset: c }} animate={{ strokeDashoffset: c * (1 - score / 100) }} transition={{ duration: 1, ease: "easeOut" }} />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-3xl font-semibold text-white">{score}</span>
+        <span className="text-[10px] uppercase tracking-widest text-white/50">match</span>
       </div>
     </div>
+  );
+};
+
+const Bar: React.FC<{ label: string; value: number; max: number }> = ({ label, value, max }) => (
+  <div>
+    <div className="flex justify-between text-sm mb-1.5"><span className="text-white/75">{label}</span><span className="font-mono text-tangerine-200">{value}/{max}</span></div>
+    <div className="h-2 rounded-full bg-white/[0.07] overflow-hidden">
+      <motion.div className="h-full rounded-full bg-gradient-to-r from-tangerine-400 to-rose-500" initial={{ width: 0 }} animate={{ width: `${Math.round((value / max) * 100)}%` }} transition={{ duration: 0.8, ease: "easeOut" }} />
+    </div>
+  </div>
+);
+
+const Stat: React.FC<{ icon: React.FC<{ className?: string }>; label: string; value: React.ReactNode }> = ({ icon: Icon, label, value }) => (
+  <div className="rounded-2xl bg-white/[0.04] border border-white/10 p-4">
+    <div className="flex items-center gap-2 text-xs text-white/50"><Icon className="w-3.5 h-3.5 text-tangerine-300" />{label}</div>
+    <div className="mt-1.5 text-white font-medium text-sm">{value}</div>
+  </div>
+);
+
+const DIFF_STYLE: Record<string, string> = { Easy: "bg-emerald-500/15 text-emerald-300 border-emerald-400/20", Medium: "bg-tangerine-500/15 text-tangerine-200 border-tangerine-400/25", Hard: "bg-rose-500/15 text-rose-300 border-rose-400/25" };
+
+export const RepositoryDetailModal: React.FC<RepositoryDetailModalProps> = ({ repository, onClose, onExplainWithAI, onProceedWithRoadmap }) => {
+  const [tab, setTab] = useState<Tab>("Overview");
+  useEffect(() => { setTab("Overview"); }, [repository?.id]);
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => { if (e.key === "Escape" && repository) onClose(); };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [repository, onClose]);
+
+  return (
+    <AnimatePresence>
+      {repository && (
+        <motion.div className="fixed inset-0 z-50 flex items-stretch sm:items-center justify-center p-0 sm:p-6 bg-black/55 backdrop-blur-md"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
+          <motion.div role="dialog" aria-modal="true" aria-labelledby="repo-detail-title" onClick={(e) => e.stopPropagation()}
+            className="relative w-full sm:max-w-5xl sm:h-[88vh] h-full glass-strong sm:rounded-[2rem] overflow-hidden flex flex-col"
+            initial={{ y: 40, scale: 0.97, opacity: 0 }} animate={{ y: 0, scale: 1, opacity: 1 }} exit={{ y: 30, opacity: 0 }} transition={{ type: "spring", stiffness: 240, damping: 26 }}>
+            <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-tangerine-500/20 blur-3xl pointer-events-none" />
+
+            {/* Header */}
+            <div className="relative px-6 sm:px-10 pt-8 pb-6 flex flex-col sm:flex-row gap-6 sm:items-center">
+              <ScoreRing score={repository.matchScore} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 text-sm text-white/50">
+                  <span>{repository.owner}</span><span>/</span>
+                  <span className="px-2 py-0.5 rounded-full text-[11px] bg-tangerine-500/15 text-tangerine-200 border border-tangerine-400/25">{repository.difficulty}</span>
+                </div>
+                <h2 id="repo-detail-title" className="mt-1 text-3xl sm:text-4xl font-semibold tracking-tight text-white truncate">{repository.name}</h2>
+                <p className="mt-2 text-white/65 leading-relaxed line-clamp-2">{repository.description || "No description provided."}</p>
+                <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                  <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/5 border border-white/10"><Star className="w-3 h-3 text-tangerine-300" />{formatNumber(repository.stars)}</span>
+                  <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/5 border border-white/10"><GitFork className="w-3 h-3" />{formatNumber(repository.forks)}</span>
+                  {repository.languages.slice(0, 5).map((l) => (
+                    <span key={l} className={`px-2.5 py-1 rounded-full border ${repository.matchedSkills.includes(l) ? "bg-tangerine-500/20 border-tangerine-400/30 text-tangerine-100" : "bg-white/5 border-white/10 text-white/70"}`}>{l}</span>
+                  ))}
+                </div>
+              </div>
+              <button onClick={onClose} className="absolute top-5 right-5 p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10" aria-label="Close"><X className="w-5 h-5" /></button>
+            </div>
+
+            {/* Tabs */}
+            <div className="relative px-6 sm:px-10 border-b border-white/10 flex gap-1">
+              {TABS.map((t) => (
+                <button key={t} onClick={() => setTab(t)} className={`relative px-4 py-3 text-sm font-medium transition-colors ${tab === t ? "text-white" : "text-white/50 hover:text-white/80"}`}>
+                  {t}{t === "Good first issues" ? ` (${repository.goodFirstIssuesCount})` : ""}
+                  {tab === t && <motion.span layoutId="repo-tab" className="absolute left-3 right-3 -bottom-px h-0.5 rounded-full bg-gradient-to-r from-tangerine-400 to-rose-500" />}
+                </button>
+              ))}
+            </div>
+
+            {/* Body */}
+            <div className="relative flex-1 overflow-y-auto px-6 sm:px-10 py-8">
+              <AnimatePresence mode="wait">
+                <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
+                  {tab === "Overview" && (
+                    <div className="space-y-8">
+                      <section>
+                        <h3 className="text-xs uppercase tracking-widest text-white/45 font-mono mb-3">Maintainer health</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          <Stat icon={Clock} label="Median time to merge" value={repository.maintainerMetrics.medianReviewTime} />
+                          <Stat icon={GitMerge} label="Merge ratio" value={repository.maintainerMetrics.mergeRatio} />
+                          <Stat icon={Users} label="Active maintainers" value={repository.maintainerMetrics.activeMaintainers || "Not measured"} />
+                          <Stat icon={Activity} label="Cadence" value={repository.maintainerMetrics.cadence} />
+                        </div>
+                      </section>
+                      <section className="grid md:grid-cols-3 gap-3">
+                        <Stat icon={Layers} label="Setup complexity (est.)" value={repository.setupComplexity} />
+                        <Stat icon={FileText} label="Docs" value={repository.readmeCoverage} />
+                        <Stat icon={Clock} label="Last activity" value={repository.recentUpdate ? formatRelativeTime(repository.recentUpdate) : "Unknown"} />
+                      </section>
+                      {repository.topics?.length > 0 && (
+                        <section>
+                          <h3 className="text-xs uppercase tracking-widest text-white/45 font-mono mb-3">Topics</h3>
+                          <div className="flex flex-wrap gap-2">{repository.topics.map((t) => <span key={t} className="px-3 py-1 rounded-full text-xs bg-white/5 border border-white/10 text-white/70">#{t}</span>)}</div>
+                        </section>
+                      )}
+                    </div>
+                  )}
+
+                  {tab === "Why it fits you" && (
+                    <div className="grid md:grid-cols-[1fr,1.1fr] gap-8">
+                      <div className="space-y-5">
+                        <Bar label="Tech stack overlap" value={repository.scoreBreakdown.techStackOverlap} max={40} />
+                        <Bar label="Difficulty fit" value={repository.scoreBreakdown.difficultyFit} max={25} />
+                        <Bar label="Activity & responsiveness" value={repository.scoreBreakdown.activityAndResponsiveness} max={20} />
+                        <Bar label="Documentation quality" value={repository.scoreBreakdown.documentationQuality} max={15} />
+                      </div>
+                      <div className="rounded-3xl liquid-lens p-6">
+                        <p className="text-xs uppercase tracking-widest text-tangerine-100/80 font-mono">In plain words</p>
+                        <p className="mt-3 text-white/90 leading-relaxed">{repository.scoreBreakdown.explanation}</p>
+                        {repository.matchedSkills.length > 0 && (
+                          <p className="mt-4 text-sm text-white/70">Your matching skills: <strong className="text-white">{repository.matchedSkills.join(", ")}</strong></p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {tab === "Good first issues" && (
+                    <div className="space-y-3">
+                      {repository.sampleIssues?.length ? repository.sampleIssues.map((iss) => (
+                        <a key={iss.id} href={isSafeUrl(iss.url) ? iss.url : "#"} target="_blank" rel="noopener noreferrer"
+                          className="group flex items-start gap-4 p-4 rounded-2xl bg-white/[0.04] border border-white/10 hover:border-tangerine-400/40 hover:bg-white/[0.07] transition">
+                          <CircleDot className="w-5 h-5 mt-0.5 text-emerald-400 shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-white font-medium group-hover:text-tangerine-100">{iss.title}</p>
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              <span className="text-xs text-white/40 font-mono">#{iss.number}</span>
+                              {iss.labels.slice(0, 4).map((l) => <span key={l} className="text-[11px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/60">{l}</span>)}
+                            </div>
+                          </div>
+                          <span className={`text-[11px] px-2.5 py-1 rounded-full border ${DIFF_STYLE[iss.difficulty] || DIFF_STYLE.Medium}`}>{iss.difficulty}</span>
+                          <ExternalLink className="w-4 h-4 text-white/30 group-hover:text-tangerine-300 mt-0.5" />
+                        </a>
+                      )) : <p className="text-white/50">No open beginner issues right now.</p>}
+                    </div>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Sticky actions */}
+            <div className="relative px-6 sm:px-10 py-4 border-t border-white/10 bg-black/10 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+              <a href={isSafeUrl(repository.url) ? repository.url : "#"} target="_blank" rel="noopener noreferrer" className="text-sm text-white/60 hover:text-white flex items-center gap-1.5"><ExternalLink className="w-4 h-4" /> View on GitHub</a>
+              <div className="flex gap-3">
+                <button onClick={() => onExplainWithAI(repository)} className="glass px-5 py-3 rounded-2xl text-sm text-white flex items-center gap-2 hover:bg-white/10"><Sparkles className="w-4 h-4 text-tangerine-300" /> Ask Orbit AI</button>
+                <button onClick={() => onProceedWithRoadmap(repository)} className="btn-tangerine px-5 py-3 rounded-2xl text-sm flex items-center gap-2"><Map className="w-4 h-4" /> Generate roadmap</button>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };

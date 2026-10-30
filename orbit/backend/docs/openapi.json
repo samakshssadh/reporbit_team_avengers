@@ -2437,6 +2437,27 @@
         ],
         "summary": "ORBIT UI: chat. {messages:[{role,content}], repoContext?:{id,name,owner}} -> {response, model, sources, caveats}. If Gemma is down returns 200 with an explicit non-AI notice + error.code."
       }
+    },
+    "/api/review": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "orbit",
+          "gemma"
+        ],
+        "summary": "DUMMY PR: Gemma reviews pasted code like a maintainer. {title, description?, code (<=500 lines), filename?, language?, repo?} -> {verdict, summary, strengths, prFeedback, comments[{line,endLine,severity,category,title,explanation,fix,suggestion}], counts, fixedCode, language, model}. Line numbers validated; code never executed."
+      }
     }
   }
 }

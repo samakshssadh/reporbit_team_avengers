@@ -7,21 +7,26 @@ import { query } from '../db/pool.js';
 import { errors, AppError } from '../lib/errors.js';
 import { v, parse } from '../lib/validate.js';
 import { rateLimiter, clientIp } from '../lib/security.js';
+import { requireCsrf } from '../lib/session.js';
 import { recommendRepositories, buildRoadmap, fromRepoId } from '../services/orbit.js';
 import { getRepoDocs } from '../services/github.js';
 import { mentorChat, buildMentorContext, LIMITS } from '../services/mentor.js';
 import { gemmaInfo } from '../services/gemma.js';
+import { reviewPullRequest, REVIEW_LIMITS } from '../services/review.js';
 
 const reposLimit = rateLimiter({ windowMs: 60e3, max: 20, key: (req) => `orbit-repos:${req.user?.id || clientIp(req)}` });
+const reviewLimit = rateLimiter({ windowMs: 60e3, max: 6, key: (req) => `review:${req.user?.id || clientIp(req)}` });
 const chatLimit = rateLimiter({ windowMs: 60e3, max: 15, key: (req) => `orbit-chat:${req.user?.id || clientIp(req)}` });
 
 async function savedSkills(req) {
-  if (!req.user) return { skills: [], experience: null };
+  if (!req.user) return { skills: [], experience: null, user: null };
   const [s, p] = await Promise.all([
     query("SELECT name FROM skills WHERE user_id = $1 AND status <> 'paused'", [req.user.id]),
-    query('SELECT experience FROM profiles WHERE user_id = $1', [req.user.id]),
+    query('SELECT experience, profession, experience_months FROM profiles WHERE user_id = $1', [req.user.id]),
   ]);
-  return { skills: s.rows.map((r) => r.name), experience: p.rows[0]?.experience || null };
+  const pr = p.rows[0] || {};
+  const skills = s.rows.map((r) => r.name);
+  return { skills, experience: pr.experience || null, user: { name: req.user.displayName, skills, experience: pr.experience, profession: pr.profession, experienceMonths: pr.experience_months } };
 }
 
 const modelLabel = (m) => (m ? `Google Gemma · ${m.id}` : 'Google Gemma (offline)');
@@ -56,6 +61,29 @@ export function orbitRoutes(r) {
     res.json(await buildRoadmap({ ...id, skills, experience: req.query.experience || mine.experience || 'beginner' }));
   });
 
+  // Dummy PR: Gemma reviews pasted code like a maintainer. Login optional; signed-in reviews are saved.
+  r.post('/api/review', async (req, res) => {
+    if (req.session) requireCsrf(req);
+    reviewLimit(req);
+    const b = parse(v.object({
+      title: v.string({ min: 3, max: REVIEW_LIMITS.titleMax }),
+      description: v.string({ max: REVIEW_LIMITS.descriptionMax, optional: true, nullable: true }),
+      code: v.string({ min: 1, max: REVIEW_LIMITS.maxChars, trim: false }),
+      filename: v.string({ max: 120, optional: true, nullable: true }),
+      language: v.string({ max: 40, optional: true, nullable: true }),
+      repo: v.string({ max: 140, optional: true, nullable: true }),
+    }), req.body);
+    if (!b.code.trim()) throw errors.validation('code cannot be empty', [{ field: 'code', message: 'cannot be empty' }]);
+    const lines = b.code.split('\n').length;
+    if (lines > REVIEW_LIMITS.maxLines) throw errors.validation(`code is ${lines} lines; the limit is ${REVIEW_LIMITS.maxLines} lines per Dummy PR`, [{ field: 'code', message: 'too many lines' }]);
+    const review = await reviewPullRequest(b);
+    if (req.user) {
+      await query('INSERT INTO pr_reviews (user_id, title, language, verdict, issues, model) VALUES ($1,$2,$3,$4,$5,$6)',
+        [req.user.id, b.title, review.language, review.verdict, review.comments.length, review.model.id]).catch(() => {});
+    }
+    res.json({ ...review, title: b.title, reviewedAt: new Date().toISOString() });
+  });
+
   r.post('/api/chat', async (req, res) => {
     chatLimit(req);
     const b = parse(v.object({
@@ -86,7 +114,7 @@ export function orbitRoutes(r) {
     }
     const context = buildMentorContext({ skills: mine.skills, experience: mine.experience || 'beginner', issue, documents, sources });
     try {
-      const out = await mentorChat({ message, history, context, sources });
+      const out = await mentorChat({ message, history, context, sources, user: mine.user });
       const refs = out.sources.length ? `\n\n---\n**Sources:** ${out.sources.map((s) => `[${s.id}] [${s.title}](${s.url})`).join(' · ')}` : '';
       const cav = out.caveats.length ? `\n\n> ${out.caveats.join('\n> ')}` : '';
       res.json({ response: out.answer + refs + cav, model: modelLabel(out.model), sources: out.sources, caveats: out.caveats, latencyMs: out.model.latencyMs });

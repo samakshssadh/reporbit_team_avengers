@@ -1,7 +1,6 @@
 import React, { memo } from "react";
-import { Handle, Position, NodeProps } from "@xyflow/react";
+import { Handle, Position } from "@xyflow/react";
 import { Repository } from "../../types";
-import { Star, Flame, Sparkles } from "lucide-react";
 
 interface NodeData {
   repository: Repository;
@@ -9,122 +8,65 @@ interface NodeData {
   isSelected: boolean;
 }
 
+// Each repository is a glowing star: size and brightness follow the match score, colour follows its domain.
+const GROUP_COLOR: Record<string, [string, string]> = {
+  frontend: ["#ffb15c", "#fe8500"],
+  backend: ["#fe8500", "#ff5a3c"],
+  ai: ["#ff7aa0", "#ff3b66"],
+  systems: ["#ffe1b8", "#ffa53d"],
+};
+
 export const RepositoryNode = memo((props: any) => {
   const { repository, onSelect, isSelected } = props.data as NodeData;
-
-  const getScoreColor = (score: number) => {
-    if (score >= 90) return "text-emerald-400 border-emerald-500/40 bg-emerald-950/60";
-    if (score >= 80) return "text-indigo-400 border-indigo-500/40 bg-indigo-950/60";
-    return "text-amber-400 border-amber-500/40 bg-amber-950/60";
-  };
-
-  const getGroupGlow = (group: string) => {
-    switch (group) {
-      case "ai":
-        return "from-purple-500/30 to-violet-600/10 border-purple-500/50 shadow-purple-500/20";
-      case "frontend":
-        return "from-blue-500/30 to-cyan-600/10 border-blue-500/50 shadow-blue-500/20";
-      case "backend":
-        return "from-emerald-500/30 to-teal-600/10 border-emerald-500/50 shadow-emerald-500/20";
-      default:
-        return "from-indigo-500/30 to-violet-600/10 border-indigo-500/50 shadow-indigo-500/20";
-    }
-  };
+  const score = repository.matchScore ?? 50;
+  const size = Math.round(26 + (Math.max(0, Math.min(100, score)) / 100) * 30); // 26–56px
+  const [c1, c2] = GROUP_COLOR[repository.constellation?.group] || GROUP_COLOR.backend;
+  const glow = 0.35 + (score / 100) * 0.5;
 
   return (
     <div
       onClick={() => onSelect(repository)}
-      className="group relative cursor-pointer select-none focus:outline-none"
+      className="group relative cursor-pointer select-none focus:outline-none flex flex-col items-center"
       tabIndex={0}
       role="button"
-      aria-label={`Repository ${repository.fullName}, match score ${repository.matchScore} percent`}
+      aria-label={`${repository.fullName}, match score ${score} percent`}
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onSelect(repository);
-        }
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(repository); }
       }}
     >
-      {/* Invisible Handles for connections */}
-      <Handle type="target" position={Position.Top} className="opacity-0 pointer-events-none" />
-      <Handle type="source" position={Position.Bottom} className="opacity-0 pointer-events-none" />
-      <Handle type="target" position={Position.Left} className="opacity-0 pointer-events-none" />
-      <Handle type="source" position={Position.Right} className="opacity-0 pointer-events-none" />
+      <Handle type="target" position={Position.Top} className="!opacity-0 !pointer-events-none" />
+      <Handle type="source" position={Position.Bottom} className="!opacity-0 !pointer-events-none" />
+      <Handle type="target" position={Position.Left} className="!opacity-0 !pointer-events-none" />
+      <Handle type="source" position={Position.Right} className="!opacity-0 !pointer-events-none" />
 
-      {/* Orbiting Ring on hover or selection */}
-      <div
-        className={`absolute -inset-2.5 rounded-2xl transition-all duration-300 pointer-events-none ${
-          isSelected
-            ? "border-2 border-indigo-400/80 bg-indigo-500/10 shadow-lg shadow-indigo-500/30 scale-105"
-            : "border border-transparent group-hover:border-white/20 group-hover:bg-white/5"
-        }`}
-      />
-
-      {/* Main Node Card */}
-      <div
-        className={`relative px-3.5 py-2.5 rounded-xl bg-space-900/90 backdrop-blur-md border transition-all duration-200 shadow-xl ${
-          isSelected
-            ? "border-indigo-400 ring-2 ring-indigo-400/30"
-            : "border-slate-800 hover:border-slate-600"
-        }`}
-      >
-        <div className="flex items-center space-x-2.5">
-          {/* Glowing Star Orb */}
-          <div className="relative flex items-center justify-center">
-            <span
-              className={`absolute w-3.5 h-3.5 rounded-full blur-[3px] bg-gradient-to-r ${getGroupGlow(
-                repository.constellation.group
-              )} animate-pulse-subtle`}
-            />
-            <span className="relative w-2.5 h-2.5 rounded-full bg-white shadow-sm" />
-          </div>
-
-          {/* Repo Info */}
-          <div className="flex flex-col">
-            <div className="flex items-center space-x-1.5">
-              <span className="text-xs font-semibold text-white tracking-tight group-hover:text-indigo-300 transition-colors">
-                {repository.name}
-              </span>
-              <span className="text-[10px] text-slate-400 font-mono">
-                / {repository.owner}
-              </span>
-            </div>
-            <div className="flex items-center space-x-2 mt-0.5">
-              <span className="text-[10px] text-slate-400 font-mono">
-                {repository.primaryLanguage}
-              </span>
-              <span className="text-[9px] text-slate-600">•</span>
-              <span className="text-[10px] text-slate-400">
-                ⭐ {(repository.stars / 1000).toFixed(1)}k
-              </span>
-            </div>
-          </div>
-
-          {/* Match Score Badge */}
-          <div
-            className={`ml-1 px-1.5 py-0.5 rounded-md text-[10px] font-mono font-bold border ${getScoreColor(
-              repository.matchScore
-            )}`}
-          >
-            {repository.matchScore}%
-          </div>
-        </div>
+      {/* Star */}
+      <div className="relative" style={{ width: size, height: size }}>
+        <span className="absolute -inset-3 rounded-full blur-xl transition-opacity duration-300 group-hover:opacity-100"
+          style={{ background: `radial-gradient(circle, ${c2} 0%, transparent 70%)`, opacity: isSelected ? 1 : glow }} />
+        {isSelected && <span className="absolute -inset-2 rounded-full border border-tangerine-300/70 animate-pulse" />}
+        <span className="absolute inset-0 rounded-full transition-transform duration-300 group-hover:scale-110"
+          style={{ background: `radial-gradient(circle at 35% 30%, #fff 0%, ${c1} 38%, ${c2} 75%)`, boxShadow: `0 0 ${size / 2}px ${size / 8}px ${c2}66, inset 0 1px 2px rgba(255,255,255,0.8)` }} />
       </div>
 
-      {/* Quick Hover Tooltip Preview */}
-      <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-56 p-2.5 rounded-lg bg-space-950/95 backdrop-blur-md border border-slate-700/80 shadow-2xl text-[11px] text-slate-300 pointer-events-none opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-150 z-50">
-        <div className="font-semibold text-white mb-1 flex items-center justify-between">
-          <span>{repository.fullName}</span>
-          <span className="text-[9px] px-1 py-0.2 rounded bg-indigo-900/60 text-indigo-300 font-mono">
-            {repository.difficulty}
-          </span>
+      {/* Name under the star */}
+      <span className="mt-2 text-[11px] font-medium text-white/80 whitespace-nowrap group-hover:text-white">{repository.name}</span>
+      <span className="text-[10px] font-mono text-tangerine-300/90">{score}%</span>
+
+      {/* Hover preview (same info as before) */}
+      <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-3 w-64 p-3 rounded-2xl glass-strong text-[11px] text-white/75 pointer-events-none opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 group-focus:opacity-100 transition-all duration-200 z-50">
+        <div className="font-semibold text-white mb-1 flex items-center justify-between gap-2">
+          <span className="truncate">{repository.fullName}</span>
+          <span className="shrink-0 text-[9px] px-1.5 py-0.5 rounded-full bg-tangerine-500/20 text-tangerine-200 font-mono">{repository.difficulty}</span>
         </div>
-        <p className="line-clamp-2 text-slate-400 text-[10px] leading-snug mb-1.5">
-          {repository.description}
-        </p>
-        <div className="flex items-center justify-between text-[9px] text-slate-400 pt-1 border-t border-slate-800">
+        <p className="line-clamp-2 text-white/60 text-[10.5px] leading-snug mb-2">{repository.description}</p>
+        <div className="grid grid-cols-3 gap-1 text-[10px] mb-2">
+          <span className="rounded-lg bg-white/5 px-1.5 py-1 text-center">{repository.primaryLanguage}</span>
+          <span className="rounded-lg bg-white/5 px-1.5 py-1 text-center">⭐ {repository.stars >= 1000 ? `${(repository.stars / 1000).toFixed(1)}k` : repository.stars}</span>
+          <span className="rounded-lg bg-tangerine-500/15 text-tangerine-200 px-1.5 py-1 text-center font-mono">{score}% match</span>
+        </div>
+        <div className="flex items-center justify-between text-[10px] text-white/50 pt-1.5 border-t border-white/10">
           <span>Review: {repository.maintainerMetrics.medianReviewTime}</span>
-          <span className="text-indigo-400 font-medium">Click to inspect →</span>
+          <span className="text-tangerine-300 font-medium">Click to inspect →</span>
         </div>
       </div>
     </div>

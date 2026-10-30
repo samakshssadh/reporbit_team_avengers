@@ -182,7 +182,7 @@ export const RepositoriesPage: React.FC = () => {
 
       {/* Repository Detail Modal */}
       <RepositoryDetailModal
-        repository={selectedRepo}
+        repository={isRoadmapOpen ? null : selectedRepo}
         onClose={() => setSelectedRepo(null)}
         onExplainWithAI={(repo) => {
           setSelectedRepo(null);

@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { UserProfile, Repository, ChatSession, ChatMessage } from "../types";
 import { apiService, ApiStatus } from "../services/api";
-import { MOCK_REPOSITORIES } from "../data/mockData";
+import { useAuth } from "./AuthContext";
 
-export type NavTab = "repositories" | "learn" | "chat";
+export type NavTab = "repositories" | "learn" | "chat" | "pr";
 
 interface AppContextType {
   activeTab: NavTab;
@@ -33,8 +33,8 @@ interface AppContextType {
 
 const DEFAULT_PROFILE: UserProfile = {
   name: "Developer",
-  skills: ["TypeScript", "React", "Python"],
-  experienceLevel: "Intermediate",
+  skills: ["JavaScript", "Python"],
+  experienceLevel: "Beginner",
   interests: ["Web", "Open Source", "AI/ML"],
   preferredDifficulty: "All",
 };
@@ -42,7 +42,7 @@ const DEFAULT_PROFILE: UserProfile = {
 const INITIAL_MESSAGE: ChatMessage = {
   id: "msg-welcome",
   role: "assistant",
-  content: "Hello! I am **Orbit AI**, powered by Google's open-weight **Gemma** model.\n\nI can help you explore repositories, breakdown architectures, guide your pull requests, and explain complex code. What would you like to explore?",
+  content: "Hey! 👋 I'm **Orbit AI**, Reporbit's assistant, powered by Google's open-weight **Gemma** model.\n\nAsk me anything — casual or technical. I can explain a repository, walk you through Git, help debug, or plan your first pull request. What's on your mind?",
   timestamp: new Date().toISOString(),
   model: "Google Gemma (open-weight)",
 };
@@ -61,7 +61,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Navigation
   const [activeTab, setActiveTabState] = useState<NavTab>(() => {
     const hash = window.location.hash.replace("#", "") as NavTab;
-    if (["repositories", "learn", "chat"].includes(hash)) {
+    if (["repositories", "learn", "chat", "pr"].includes(hash)) {
       return hash;
     }
     return "repositories";
@@ -76,7 +76,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace("#", "") as NavTab;
-      if (["repositories", "learn", "chat"].includes(hash)) {
+      if (["repositories", "learn", "chat", "pr"].includes(hash)) {
         setActiveTabState(hash);
       }
     };
@@ -84,25 +84,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return () => window.removeEventListener("popstate", handleHashChange);
   }, []);
 
-  // Profile preferences
-  const [profile, setProfile] = useState<UserProfile>(() => {
-    const saved = localStorage.getItem("orbit_profile");
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        // ignore
-      }
-    }
-    return DEFAULT_PROFILE;
+  // Profile: comes from the signed-in user's saved profile (database), not hard-coded defaults.
+  const auth = useAuth();
+  const toLevel = (e?: string | null): UserProfile["experienceLevel"] =>
+    e === "advanced" ? "Advanced" : e === "intermediate" ? "Intermediate" : "Beginner";
+  const fromServer = (): UserProfile => ({
+    name: auth.user?.displayName || DEFAULT_PROFILE.name,
+    skills: auth.profile?.skills?.length ? auth.profile.skills : DEFAULT_PROFILE.skills,
+    experienceLevel: toLevel(auth.profile?.experience),
+    interests: auth.profile?.interests?.length ? auth.profile.interests : DEFAULT_PROFILE.interests,
+    preferredDifficulty: (localStorage.getItem("reporbit_difficulty") as UserProfile["preferredDifficulty"]) || "All",
   });
+  const [profile, setProfile] = useState<UserProfile>(fromServer);
+  useEffect(() => { setProfile(fromServer()); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [auth.user?.id, auth.profile]);
 
   const updateProfile = (partial: Partial<UserProfile>) => {
-    setProfile((prev) => {
-      const updated = { ...prev, ...partial };
-      localStorage.setItem("orbit_profile", JSON.stringify(updated));
-      return updated;
-    });
+    setProfile((prev) => ({ ...prev, ...partial }));
+    if (partial.preferredDifficulty) localStorage.setItem("reporbit_difficulty", partial.preferredDifficulty);
+    // Persist the parts the backend stores.
+    const patch: Record<string, unknown> = {};
+    if (partial.skills) patch.skills = partial.skills;
+    if (partial.interests) patch.interests = partial.interests;
+    if (partial.experienceLevel) patch.experience = partial.experienceLevel.toLowerCase();
+    if (Object.keys(patch).length && auth.status === "authed") auth.saveProfile(patch).catch(() => {});
   };
 
   // Repository selection & modals

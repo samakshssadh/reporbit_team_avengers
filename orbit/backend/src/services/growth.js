@@ -97,6 +97,7 @@ export function computeGrowth({ skills = [], events = [], contributions = [], pr
     mergedPullRequests: mergedPrs.length,
     mergeRate: prs.length ? Math.round((mergedPrs.length / prs.length) * 100) / 100 : null,
     repositories: repos.size,
+    priorContributions: profile.prior_contributions || 0, // self-reported before joining (not counted in XP)
   };
 
   // ---------- activity dates (contributions + skill events) ----------

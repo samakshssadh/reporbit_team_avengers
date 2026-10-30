@@ -2,8 +2,6 @@ import React, { useMemo, useCallback } from "react";
 import {
   ReactFlow,
   Controls,
-  Background,
-  BackgroundVariant,
   Node,
   Edge,
   useNodesState,
@@ -14,7 +12,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { Repository } from "../../types";
 import { RepositoryNode } from "./RepositoryNode";
-import { RotateCcw, Info, Sparkles, Network } from "lucide-react";
+import { RotateCcw, Info, Network } from "lucide-react";
 
 interface ConstellationCanvasProps {
   repositories: Repository[];
@@ -76,9 +74,9 @@ const ConstellationInner: React.FC<ConstellationCanvasProps> = ({
             animated: isRelatedToSelected || false,
             style: {
               stroke: isRelatedToSelected
-                ? "rgba(99, 102, 241, 0.8)"
-                : "rgba(148, 163, 184, 0.2)",
-              strokeWidth: isRelatedToSelected ? 2 : 1,
+                ? "rgba(254, 133, 0, 0.85)"
+                : "rgba(255, 196, 140, 0.14)",
+              strokeWidth: isRelatedToSelected ? 1.6 : 0.8,
               strokeDasharray: sharedGroup ? "4 4" : undefined,
             },
           });
@@ -95,35 +93,22 @@ const ConstellationInner: React.FC<ConstellationCanvasProps> = ({
     fitView({ padding: 0.2, duration: 400 });
   }, [fitView]);
 
+  // Seamless sky: no container box — the constellation floats on the page's living background.
   return (
-    <div className="relative w-full h-[620px] rounded-2xl overflow-hidden border border-slate-800 bg-[#07090e] shadow-2xl">
-      {/* Background ambient cosmic glow */}
-      <div className="absolute inset-0 pointer-events-none opacity-40">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-600/15 rounded-full blur-[100px]" />
-        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-purple-600/15 rounded-full blur-[90px]" />
-      </div>
-
-      {/* Top Banner / Breadcrumb */}
-      <div className="absolute top-4 left-4 z-10 flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-space-900/80 backdrop-blur-md border border-slate-700/60 text-xs text-slate-300">
-        <Network className="w-3.5 h-3.5 text-indigo-400" />
+    <div className="relative w-full h-[640px]">
+      <div className="absolute top-2 left-2 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full glass text-xs text-white/75">
+        <Network className="w-3.5 h-3.5 text-tangerine-300" />
         <span className="font-medium">Repository Constellation</span>
-        <span className="text-slate-500">•</span>
-        <span className="text-slate-400">{repositories.length} Active Nodes</span>
+        <span className="text-white/35">•</span>
+        <span>{repositories.length} stars</span>
       </div>
 
-      {/* Reset View Action */}
-      <div className="absolute top-4 right-4 z-10">
-        <button
-          onClick={handleResetView}
-          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-space-900/80 backdrop-blur-md border border-slate-700/60 text-xs font-medium text-slate-300 hover:text-white hover:bg-space-800 transition-all shadow-md"
-          title="Reset Constellation Zoom & Pan"
-        >
-          <RotateCcw className="w-3.5 h-3.5 text-indigo-400" />
-          <span>Reset View</span>
+      <div className="absolute top-2 right-2 z-10">
+        <button onClick={handleResetView} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full glass text-xs text-white/80 hover:text-white" title="Reset zoom & pan">
+          <RotateCcw className="w-3.5 h-3.5 text-tangerine-300" /> Reset view
         </button>
       </div>
 
-      {/* React Flow Canvas */}
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -131,30 +116,19 @@ const ConstellationInner: React.FC<ConstellationCanvasProps> = ({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         fitView
+        fitViewOptions={{ padding: 0.25 }}
         minZoom={0.4}
-        maxZoom={1.6}
+        maxZoom={1.8}
         defaultViewport={{ x: 0, y: 0, zoom: 0.85 }}
-        attributionPosition="bottom-left"
         proOptions={{ hideAttribution: true }}
+        style={{ background: "transparent" }}
       >
-        <Background
-          variant={BackgroundVariant.Dots}
-          gap={24}
-          size={1.2}
-          color="rgba(255, 255, 255, 0.08)"
-        />
-        <Controls
-          showInteractive={false}
-          className="!bottom-4 !right-4 !m-0"
-        />
+        <Controls showInteractive={false} className="!bottom-2 !right-2 !m-0" />
       </ReactFlow>
 
-      {/* Bottom Legend */}
-      <div className="absolute bottom-4 left-4 z-10 flex items-center space-x-3 px-3.5 py-2 rounded-xl bg-space-900/85 backdrop-blur-md border border-slate-800 text-[11px] text-slate-400 max-w-sm">
-        <Info className="w-4 h-4 text-indigo-400 shrink-0" />
-        <p>
-          <strong className="text-slate-200">Constellation Legend:</strong> Stars represent recommended open-source repositories; lines indicate shared languages or architecture domains.
-        </p>
+      <div className="absolute bottom-2 left-2 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full glass text-[11px] text-white/60 max-w-md">
+        <Info className="w-3.5 h-3.5 text-tangerine-300 shrink-0" />
+        <span>Bigger, brighter stars match you better. Hover to preview · click to open.</span>
       </div>
     </div>
   );

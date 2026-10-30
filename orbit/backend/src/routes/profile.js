@@ -37,6 +37,7 @@ function mapProfile(p, skills) {
     interests: p.interests, experience: p.experience,
     headline: p.headline, bio: p.bio, location: p.location, goals: p.goals, links: p.links,
     codingSince: p.coding_since, isPublic: p.is_public, onboarded: p.onboarded, updatedAt: p.updated_at,
+    profession: p.profession ?? null, experienceMonths: p.experience_months ?? null, priorContributions: p.prior_contributions ?? 0,
   };
 }
 
@@ -54,7 +55,7 @@ async function loadAll(userId) {
 function growthFor(all) {
   return computeGrowth({
     skills: all.skills, events: all.events, contributions: all.contributions,
-    profile: { interests: all.profile?.interests || [], coding_since: all.profile?.coding_since, created_at: all.userCreatedAt },
+    profile: { interests: all.profile?.interests || [], coding_since: all.profile?.coding_since, created_at: all.userCreatedAt, prior_contributions: all.profile?.prior_contributions || 0 },
   });
 }
 
@@ -118,7 +119,13 @@ const profileSchema = v.object({
   displayName: v.string({ min: 1, max: 80, optional: true }),
   githubLogin: v.string({ min: 1, max: 39, pattern: OWNER_RE, optional: true, nullable: true }),
   onboarded: v.bool({ optional: true }),
+  profession: v.string({ max: 80, optional: true, nullable: true }),
+  experienceMonths: v.int({ min: 0, max: 720, optional: true, nullable: true }),
+  priorContributions: v.int({ min: 0, max: 100000, optional: true }),
 }, { partial: true });
+
+// Experience level derived from time coding (used by recommendations) unless the user sets it explicitly.
+export const levelFromMonths = (m) => (m < 12 ? 'beginner' : m < 36 ? 'intermediate' : 'advanced');
 
 const contributionCreate = v.object({
   kind: v.enum(KINDS),
@@ -168,6 +175,10 @@ export function profileRoutes(r) {
       const col = (name, val) => { vals.push(val); sets.push(`${name} = $${vals.length}`); };
       if (b.interests !== undefined) col('interests', b.interests);
       if (b.experience !== undefined) col('experience', b.experience);
+      else if (b.experienceMonths !== undefined && b.experienceMonths !== null) col('experience', levelFromMonths(b.experienceMonths));
+      if (b.profession !== undefined) col('profession', b.profession);
+      if (b.experienceMonths !== undefined) col('experience_months', b.experienceMonths);
+      if (b.priorContributions !== undefined) col('prior_contributions', b.priorContributions);
       if (b.headline !== undefined) col('headline', b.headline);
       if (b.bio !== undefined) col('bio', b.bio);
       if (b.location !== undefined) col('location', b.location);

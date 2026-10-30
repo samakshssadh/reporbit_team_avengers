@@ -64,6 +64,8 @@ route('get', '/api/repositories', { tags: ['orbit'], summary: 'ORBIT UI: recomme
 route('get', '/api/repositories/{id}/roadmap', { tags: ['orbit', 'gemma'], summary: 'ORBIT UI: contribution roadmap. id = owner__repo. GEMMA writes it from README/CONTRIBUTING; invented files/commands are stripped. generatedBy: gemma | rules (honest fallback).', responses: { 200: ok(S('object')) } });
 route('post', '/api/chat', { tags: ['orbit', 'gemma'], summary: 'ORBIT UI: chat. {messages:[{role,content}], repoContext?:{id,name,owner}} -> {response, model, sources, caveats}. If Gemma is down returns 200 with an explicit non-AI notice + error.code.', responses: { 200: ok(obj({ response: str, model: str, sources: arr(ref('Source')), caveats: arr(str) }, ['response', 'model'])) } });
 
+route('post', '/api/review', { tags: ['orbit', 'gemma'], summary: 'DUMMY PR: Gemma reviews pasted code like a maintainer. {title, description?, code (<=500 lines), filename?, language?, repo?} -> {verdict, summary, strengths, prFeedback, comments[{line,endLine,severity,category,title,explanation,fix,suggestion}], counts, fixedCode, language, model}. Line numbers validated; code never executed.', responses: { 200: ok(S('object')) } });
+
 const doc = { openapi: '3.0.3', info: { title: 'DevPath backend API (contract v1 + growth extensions)', version: '1.0.0' }, servers: [{ url: 'http://localhost:4000' }], components: { securitySchemes: { session: { type: 'apiKey', in: 'cookie', name: 'sid' } }, schemas }, paths: p };
 fs.writeFileSync(new URL('./openapi.json', import.meta.url), JSON.stringify(doc, null, 2) + '\n');
 console.log(`wrote openapi.json with ${Object.keys(p).length} paths`);

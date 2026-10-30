@@ -168,7 +168,7 @@ export function issueRoutes(r) {
       documents = [{ kind: 'issue', content: `Title: ${ctx.issue.title}\nLabels: ${ctx.issue.labels.join(', ')}\nState: ${ctx.issue.state}\n\n${ctx.issue.body || '(no description)'}`, sourceId: 'S1', truncated: false }, ...ctx.documents];
     }
     const context = buildMentorContext({ skills: user.skills.map((s) => s.name), experience: user.experience, issue, documents, sources });
-    const out = await mentorChat({ message: b.message, history, context, sources });
+    const out = await mentorChat({ message: b.message, history, context, sources, user: { name: req.user.displayName, skills: user.skills.map((s) => s.name), experience: user.experience } });
     res.json(out);
   });
 
