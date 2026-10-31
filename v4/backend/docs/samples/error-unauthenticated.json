@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": "UNAUTHENTICATED",
+    "message": "Sign in required",
+    "retryable": false,
+    "requestId": "268c036b-6e24-4599-8169-a7053bd81137"
+  }
+}

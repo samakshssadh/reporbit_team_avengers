@@ -1,0 +1,44 @@
+{
+  "user": {
+    "id": "94fe31d8-4b9a-459d-ab00-219448e9af3e",
+    "email": "demo@devpath.dev",
+    "displayName": "Demo Student",
+    "handle": "demo-student",
+    "githubLogin": null,
+    "avatarUrl": null,
+    "createdAt": "2025-09-25T21:31:57.815Z"
+  },
+  "profile": {
+    "skills": [
+      "Python",
+      "Git",
+      "HTML & CSS",
+      "JavaScript",
+      "SQL",
+      "Node.js",
+      "React",
+      "TypeScript",
+      "PostgreSQL",
+      "Express"
+    ],
+    "interests": [
+      "web development",
+      "open source",
+      "ai"
+    ],
+    "experience": "intermediate",
+    "headline": "CS student · learning full-stack",
+    "bio": "Started with Python in first year, now building with TypeScript and Node.",
+    "location": "Hyderabad, India",
+    "goals": [
+      "Get 5 PRs merged this semester",
+      "Learn Docker"
+    ],
+    "links": {},
+    "codingSince": "2025-09-05",
+    "isPublic": true,
+    "onboarded": true,
+    "updatedAt": "2026-10-30T21:31:57.757Z"
+  },
+  "suggestedSkills": []
+}

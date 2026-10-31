@@ -1,0 +1,76 @@
+{
+  "items": [
+    {
+      "id": "d7fe4edb-9cd7-41ba-8f5d-fcddaf49efcf",
+      "kind": "pull_request",
+      "title": "Add health check endpoint",
+      "description": null,
+      "repo": {
+        "owner": "example-org",
+        "name": "api-kit",
+        "fullName": "example-org/api-kit"
+      },
+      "url": null,
+      "status": "open",
+      "skills": [
+        "Express",
+        "Node.js"
+      ],
+      "skillSlugs": [
+        "express",
+        "nodejs"
+      ],
+      "occurredAt": "2026-10-25T21:31:57.845Z",
+      "source": "manual",
+      "createdAt": "2026-10-30T21:31:57.757Z"
+    },
+    {
+      "id": "0451667c-9a0d-481c-8f32-237cf376fd03",
+      "kind": "review",
+      "title": "Reviewed Postgres migration PR",
+      "description": null,
+      "repo": {
+        "owner": "example-org",
+        "name": "api-kit",
+        "fullName": "example-org/api-kit"
+      },
+      "url": null,
+      "status": "completed",
+      "skills": [
+        "PostgreSQL"
+      ],
+      "skillSlugs": [
+        "postgresql"
+      ],
+      "occurredAt": "2026-10-18T21:31:57.845Z",
+      "source": "manual",
+      "createdAt": "2026-10-30T21:31:57.757Z"
+    },
+    {
+      "id": "20e85784-1ee6-4c37-a0f0-9b8509fd5e8e",
+      "kind": "pull_request",
+      "title": "Add React hook for API errors",
+      "description": null,
+      "repo": {
+        "owner": "example-org",
+        "name": "ui-kit",
+        "fullName": "example-org/ui-kit"
+      },
+      "url": null,
+      "status": "open",
+      "skills": [
+        "React",
+        "TypeScript"
+      ],
+      "skillSlugs": [
+        "react",
+        "typescript"
+      ],
+      "occurredAt": "2026-10-10T21:31:57.844Z",
+      "source": "manual",
+      "createdAt": "2026-10-30T21:31:57.757Z"
+    }
+  ],
+  "nextCursor": "WyIyMDI2LTEwLTEwVDIxOjMxOjU3Ljg0NFoiLCIyMGU4NTc4NC0xZWU2LTRjMzctYTBmMC05Yjg1MDlmZDVlOGUiXQ",
+  "total": 15
+}
