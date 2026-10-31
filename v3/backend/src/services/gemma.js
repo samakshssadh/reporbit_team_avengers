@@ -115,7 +115,7 @@ async function callGoogle(model, messages, { json, temperature, maxTokens, timeo
   const r = await safeFetch(`${GOOGLE_BASE()}/models/${encodeURIComponent(model)}:generateContent`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': config.gemma.googleApiKey },
-    body: JSON.stringify({ contents, generationConfig: { temperature, maxOutputTokens: maxTokens } }),
+    body: JSON.stringify({ contents, generationConfig: { temperature, maxOutputTokens: Math.max(maxTokens, 2048) } }),
   }, timeoutMs);
   if (r.status === 429) {
     const ra = Number(r.headers.get('retry-after')) || 30;
@@ -125,7 +125,8 @@ async function callGoogle(model, messages, { json, temperature, maxTokens, timeo
   if (r.status === 404) throw errors.modelUnavailable(`Gemma model "${model}" not found on the Gemini API`);
   if (!r.ok) throw errors.modelUnavailable(`Gemma API returned HTTP ${r.status}`);
   const data = await r.json();
-  const text = data?.candidates?.[0]?.content?.parts?.map((p) => p.text || '').join('') || '';
+  // Gemma 4 can return "thought" parts (internal reasoning); only the visible answer is used.
+  const text = data?.candidates?.[0]?.content?.parts?.filter((p) => !p.thought).map((p) => p.text || '').join('') || '';
   if (!text) throw errors.modelUnavailable(`Gemma returned no text (finishReason: ${data?.candidates?.[0]?.finishReason || 'unknown'})`);
   return text;
 }
