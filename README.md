@@ -28,7 +28,7 @@ Reporbit finds real open-source repositories that match your skills (GitHub, Git
 | 🎯 | **Transparent match score** | Stack overlap, difficulty fit, activity and docs quality, with each part shown. Maintainer metrics (median time to merge, merge ratio) come from real PRs; anything we can't measure says *"Not measured"*. |
 | 🗺️ | **Gemma roadmaps** | Gemma reads the repo's README and CONTRIBUTING and writes your path to a first PR. Commands and file names that aren't in those docs are removed. |
 | 💬 | **Orbit AI** | A mentor that talks like a person: casual chat, slang, Hinglish. It answers from the repo's docs with cited sources. |
-| 🔍 | **Dummy PR** | Paste your code; Gemma reviews it like a maintainer, with a verdict, line-by-line comments (bug / issue / suggestion / style), fixes and a corrected version. |
+| 🔍 | **Dummy PR** | Paste code (up to 3,000 lines) or upload a whole project **.zip**; Gemma reviews it like a maintainer, file by file, with a verdict, line-by-line comments (bug / issue / suggestion / style) and fixes. Code is never executed. |
 | 📈 | **Profile & growth** | Time on Reporbit, repos explored and contributed to, topics, a 12-month heatmap, a growth chart, and *where you were → where you are*. |
 
 <table>

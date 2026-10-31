@@ -10,10 +10,13 @@ export class Router {
     this.before = [];
   }
   use(fn) { this.before.push(fn); }
+  // Optional first argument { bodyLimit: bytes } raises the JSON body limit for one route (e.g. zip uploads).
   add(method, pattern, ...handlers) {
+    let bodyLimit = MAX_BODY;
+    if (handlers[0] && typeof handlers[0] === 'object' && 'bodyLimit' in handlers[0]) bodyLimit = handlers.shift().bodyLimit;
     const keys = [];
     const re = new RegExp('^' + pattern.replace(/\/:([A-Za-z_]+)/g, (_, k) => { keys.push(k); return '/([^/]+)'; }) + '/?$');
-    this.routes.push({ method, re, keys, handlers });
+    this.routes.push({ method, re, keys, handlers, bodyLimit });
   }
   get(p, ...h) { this.add('GET', p, ...h); }
   post(p, ...h) { this.add('POST', p, ...h); }
@@ -42,7 +45,7 @@ export class Router {
           if (r.method !== req.method) { methodMismatch = true; continue; }
           req.params = {};
           r.keys.forEach((k, i) => { req.params[k] = decodeURIComponent(m[i + 1]); });
-          if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) req.body = await readJson(req);
+          if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) req.body = await readJson(req, r.bodyLimit);
           for (const h of r.handlers) {
             await h(req, res);
             if (res.writableEnded) break;
@@ -86,13 +89,13 @@ function enhance(req, res, requestId) {
   };
 }
 
-function readJson(req) {
+function readJson(req, limit = MAX_BODY) {
   return new Promise((resolve, reject) => {
     let size = 0;
     const chunks = [];
     req.on('data', (c) => {
       size += c.length;
-      if (size > MAX_BODY) { reject(new AppError('PAYLOAD_TOO_LARGE', 'Request body too large (max 256 KB)')); req.destroy(); return; }
+      if (size > limit) { reject(new AppError('PAYLOAD_TOO_LARGE', `Request body too large (max ${Math.round(limit / 1024)} KB)`)); req.destroy(); return; }
       chunks.push(c);
     });
     req.on('end', () => {

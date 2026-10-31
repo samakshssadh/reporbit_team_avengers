@@ -13,10 +13,11 @@ import { platformDocs } from '../services/platforms.js';
 import { getRepoDocs } from '../services/github.js';
 import { mentorChat, buildMentorContext, LIMITS } from '../services/mentor.js';
 import { gemmaInfo } from '../services/gemma.js';
-import { reviewPullRequest, REVIEW_LIMITS } from '../services/review.js';
+import { reviewPullRequest, reviewProject, isReviewable, REVIEW_LIMITS } from '../services/review.js';
+import { readZip } from '../lib/unzip.js';
 
 const reposLimit = rateLimiter({ windowMs: 60e3, max: 20, key: (req) => `orbit-repos:${req.user?.id || clientIp(req)}` });
-const reviewLimit = rateLimiter({ windowMs: 60e3, max: 6, key: (req) => `review:${req.user?.id || clientIp(req)}` });
+const reviewLimit = rateLimiter({ windowMs: 60e3, max: 10, key: (req) => `review:${req.user?.id || clientIp(req)}` });
 const chatLimit = rateLimiter({ windowMs: 60e3, max: 15, key: (req) => `orbit-chat:${req.user?.id || clientIp(req)}` });
 
 async function savedSkills(req) {
@@ -80,10 +81,38 @@ export function orbitRoutes(r) {
     if (!b.code.trim()) throw errors.validation('code cannot be empty', [{ field: 'code', message: 'cannot be empty' }]);
     const lines = b.code.split('\n').length;
     if (lines > REVIEW_LIMITS.maxLines) throw errors.validation(`code is ${lines} lines; the limit is ${REVIEW_LIMITS.maxLines} lines per Dummy PR`, [{ field: 'code', message: 'too many lines' }]);
-    const review = await reviewPullRequest(b);
+    // Long files are reviewed in chunks (same merged format as zip projects).
+    const review = lines > 400
+      ? await reviewProject({ title: b.title, description: b.description, repo: b.repo, files: [{ path: b.filename || 'pasted-code', content: b.code }] })
+      : await reviewPullRequest(b);
     if (req.user) {
       await query('INSERT INTO pr_reviews (user_id, title, language, verdict, issues, model) VALUES ($1,$2,$3,$4,$5,$6)',
-        [req.user.id, b.title, review.language, review.verdict, review.comments.length, review.model.id]).catch(() => {});
+        [req.user.id, b.title, review.language, review.verdict, review.files ? review.files.reduce((n, f) => n + f.comments.length, 0) : review.comments.length, review.model.id]).catch(() => {});
+    }
+    res.json({ ...review, title: b.title, reviewedAt: new Date().toISOString() });
+  });
+
+  // Dummy PR from a .zip: unpacked in memory (never executed), most relevant source files reviewed by Gemma.
+  r.post('/api/review/zip', { bodyLimit: 12 * 1024 * 1024 }, async (req, res) => {
+    if (req.session) requireCsrf(req);
+    reviewLimit(req);
+    const b = parse(v.object({
+      title: v.string({ min: 3, max: REVIEW_LIMITS.titleMax }),
+      description: v.string({ max: REVIEW_LIMITS.descriptionMax, optional: true, nullable: true }),
+      repo: v.string({ max: 140, optional: true, nullable: true }),
+      filename: v.string({ max: 200, optional: true, nullable: true }),
+      zipBase64: v.string({ min: 20, max: 12 * 1024 * 1024, trim: false }),
+    }), req.body);
+    const buf = Buffer.from(b.zipBase64.replace(/^data:[^,]*,/, ''), 'base64');
+    if (buf.length > 8 * 1024 * 1024) throw errors.validation('The zip is larger than 8 MB — remove node_modules, build folders and assets, then try again');
+    const { files, skipped } = readZip(buf, { filter: isReviewable });
+    if (!files.length) throw errors.validation('No reviewable source files found in the zip (node_modules, build output, binaries and lock files are ignored)');
+    const review = await reviewProject({ title: b.title, description: b.description, repo: b.repo, files, skipped: skipped.filter((x) => x.reason !== 'not a source file').slice(0, 50) });
+    review.ignoredCount = skipped.filter((x) => x.reason === 'not a source file').length;
+    review.archive = { name: b.filename || 'upload.zip', sourceFiles: files.length };
+    if (req.user) {
+      await query('INSERT INTO pr_reviews (user_id, title, language, verdict, issues, model) VALUES ($1,$2,$3,$4,$5,$6)',
+        [req.user.id, b.title, review.language.slice(0, 100), review.verdict, review.files.reduce((n, f) => n + f.comments.length, 0), review.model.id]).catch(() => {});
     }
     res.json({ ...review, title: b.title, reviewedAt: new Date().toISOString() });
   });

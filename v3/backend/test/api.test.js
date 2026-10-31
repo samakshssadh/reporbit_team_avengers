@@ -1,3 +1,5 @@
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
 // End-to-end API tests: real PostgreSQL (TEST_DATABASE_URL), mock GitHub API, mock Gemma runtimes.
 import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -95,6 +97,7 @@ const gemmaServer = http.createServer((req, res) => {
         { title: 'Branch', category: 'Nonsense', summary: 's', details: [], keyFiles: [], proTip: 'p' },
       ] });
       if (all.includes('growth summaries')) return '```json\n{"title":"From Python to TypeScript","story":"You started with Python...","nextFocus":"Try NestJS"}\n```';
+      if (all.includes('TITLE and DESCRIPTION')) return JSON.stringify({ title: 'Clear', description: 'Explain why', scope: 'Focused', suggestedTitle: 'feat: add helpers' });
       if (all.includes('Dummy PR')) return JSON.stringify({ verdict: 'approve', summary: 'Mostly fine.', strengths: ['clear names'],
         prFeedback: { title: 'ok', description: 'explain why', scope: 'small', suggestedTitle: 'fix: handle empty list' },
         comments: [
@@ -372,8 +375,16 @@ test('dummy PR: Gemma review is validated (bad lines dropped, no approve with bu
   assert.ok(JSON.stringify(lastGemmaRequest.body).includes('   2 | '), 'code sent with line numbers');
   r = await client().post('/api/review', { title: 'x', code });
   assert.equal(r.status, 400);
-  r = await client().post('/api/review', { title: 'Big file', code: 'a\n'.repeat(600) });
+  r = await client().post('/api/review', { title: 'Too big', code: 'a\n'.repeat(3500) });
   assert.equal(r.status, 400);
+  // Long pasted file (900 lines) -> chunked project review, line numbers stay global
+  r = await client().post('/api/review', { title: 'Long file', code: Array.from({ length: 900 }, (_, i) => `x${i} = ${i}`).join('\n'), filename: 'long.py' });
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  assert.equal(r.body.mode, 'project');
+  assert.equal(r.body.files.length, 1);
+  assert.equal(r.body.files[0].lineCount, 900);
+  assert.ok(r.body.files[0].comments.every((c) => c.line >= 1 && c.line <= 900));
+  assert.equal(r.body.prFeedback.suggestedTitle, 'feat: add helpers');
 });
 
 test('gemma: timeout -> UPSTREAM_TIMEOUT 504', async () => {
@@ -476,6 +487,46 @@ test('orbit: /api/chat never fakes AI; grounded answer when Gemma is up', async 
   assert.ok(!r.body.response.includes('made-up.example'));
   assert.ok(JSON.stringify(lastGemmaRequest.body).includes('untrusted_document'));
   assert.equal((await client().post('/api/chat', { messages: [{ role: 'assistant', content: 'x' }] })).status, 400);
+});
+
+// Minimal zip writer for tests (deflate entries).
+function makeZip(entries) {
+  const zlib = require('node:zlib');
+  const locals = [], centrals = []; let off = 0;
+  for (const [name, content, opts = {}] of entries) {
+    const raw = Buffer.isBuffer(content) ? content : Buffer.from(content);
+    const data = zlib.deflateRawSync(raw);
+    const nameB = Buffer.from(name);
+    const lh = Buffer.alloc(30); lh.writeUInt32LE(0x04034b50, 0); lh.writeUInt16LE(20, 4); lh.writeUInt16LE(8, 8); lh.writeUInt32LE(data.length, 18); lh.writeUInt32LE(opts.fakeSize ?? raw.length, 22); lh.writeUInt16LE(nameB.length, 26);
+    const ch = Buffer.alloc(46); ch.writeUInt32LE(0x02014b50, 0); ch.writeUInt16LE(20, 6); ch.writeUInt16LE(8, 10); ch.writeUInt32LE(data.length, 20); ch.writeUInt32LE(opts.fakeSize ?? raw.length, 24); ch.writeUInt16LE(nameB.length, 28); ch.writeUInt32LE(off, 42);
+    locals.push(lh, nameB, data); centrals.push(ch, nameB); off += 30 + nameB.length + data.length;
+  }
+  const cd = Buffer.concat(centrals);
+  const end = Buffer.alloc(22); end.writeUInt32LE(0x06054b50, 0); end.writeUInt16LE(entries.length, 8); end.writeUInt16LE(entries.length, 10); end.writeUInt32LE(cd.length, 12); end.writeUInt32LE(off, 16);
+  return Buffer.concat([...locals, cd, end]);
+}
+
+test('dummy PR zip: safe unzip, ignores junk, reviews source files with Gemma', async () => {
+  Object.assign(config.gemma, { provider: 'ollama', model: 'gemma3:4b', timeoutMs: 3000 });
+  const zip = makeZip([
+    ['proj/src/stats.py', 'def avg(xs):\n    return sum(xs) / len(xs)\n'],
+    ['proj/src/app.js', 'const a = 1;\nconsole.log(a)\n'],
+    ['proj/node_modules/lib/index.js', 'module.exports = 1'],
+    ['proj/logo.png', Buffer.from([137, 80, 78, 71, 0, 0, 0, 1])],
+    ['../evil.py', 'import os'],
+    ['proj/src/bomb.py', 'a'.repeat(400 * 1024)],
+  ]);
+  let r = await client().post('/api/review/zip', { title: 'Add stats helpers', description: 'Adds avg()', filename: 'proj.zip', zipBase64: zip.toString('base64') });
+  assert.equal(r.status, 200, JSON.stringify(r.body).slice(0, 400));
+  assert.equal(r.body.mode, 'project');
+  assert.deepEqual(r.body.files.map((f) => f.path).sort(), ['proj/src/app.js', 'proj/src/stats.py']);
+  assert.ok(r.body.notReviewed.some((x) => x.path === '../evil.py' && x.reason === 'unsafe path'));
+  assert.ok(r.body.notReviewed.some((x) => x.path === 'proj/src/bomb.py' && /too large/.test(x.reason)), 'oversized file skipped (zip-bomb guard)');
+  assert.ok(r.body.ignoredCount >= 2, 'node_modules + png ignored');
+  assert.equal(r.body.verdict, 'request_changes');
+  assert.ok(r.body.counts.bug >= 1);
+  assert.equal((await client().post('/api/review/zip', { title: 'Bad zip', zipBase64: Buffer.from('not a zip at all, sorry').toString('base64') })).status, 400);
+  assert.equal((await client().post('/api/review/zip', { title: 'Only junk', zipBase64: makeZip([['node_modules/x.js', '1']]).toString('base64') })).status, 400);
 });
 
 test('profile dashboard: time, repos, topics, heatmap, then vs now', async () => {
