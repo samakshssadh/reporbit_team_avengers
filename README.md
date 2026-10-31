@@ -1,67 +1,122 @@
-# Orbit: open-source discovery, contribution roadmaps and Google Gemma AI
+<div align="center">
 
-Orbit helps students who know basic coding make their **first open-source contribution**. It recommends real GitHub repositories with beginner issues that match your stack, generates a step-by-step contribution roadmap grounded in each repo's own README/CONTRIBUTING, and gives you an AI mentor. **All of the AI in the product is Google Gemma, an open-weight model.**
+# 🪐 Reporbit
 
-```
-orbit/
-  backend/    Node.js + PostgreSQL + Gemma. Serves the API at /api AND the compiled frontend at /
-  frontend/   React + Vite + Tailwind (Orbit UI) source
-```
+### Your first open-source contribution, guided by Google Gemma.
 
-## Run everything (one server, one URL)
+Reporbit finds real open-source repositories that match your skills (GitHub, GitLab and Bitbucket), explains *why* they fit, writes a step-by-step contribution roadmap from each project's own docs, reviews your practice pull requests, and tracks your growth, with **Orbit AI**, a friendly Gemma-powered mentor, by your side.
 
-Requirements: Node 20+, PostgreSQL 13+. Gemma runs through **Ollama** (local) or a **Google AI Studio** key.
+**Team Avengers** · Hacktoberfest Hack Day Hyderabad 2026 · Track 2: *Best Use of Gemma*
+
+![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
+![Google Gemma](https://img.shields.io/badge/AI-Google%20Gemma-fe8500)
+![License: MIT](https://img.shields.io/badge/code-MIT-21232e)
+
+<img src="v3/docs/screenshots/landing.png" alt="Reporbit landing page" width="900" />
+
+</div>
+
+---
+
+## ✨ What Reporbit does
+
+| | Feature | What you get |
+|---|---|---|
+| 🌌 | **Repository Constellation** | Up to 24 real repos with open beginner issues from **GitHub, GitLab and Bitbucket**, arranged in rings: best match at the centre. |
+| 🎯 | **Transparent match score** | Stack overlap, difficulty fit, activity and docs quality, with each part shown. Maintainer metrics (median time to merge, merge ratio) come from real PRs; anything we can't measure says *"Not measured"*. |
+| 🗺️ | **Gemma roadmaps** | Gemma reads the repo's README and CONTRIBUTING and writes your path to a first PR. Commands and file names that aren't in those docs are removed. |
+| 💬 | **Orbit AI** | A mentor that talks like a person: casual chat, slang, Hinglish. It answers from the repo's docs with cited sources. |
+| 🔍 | **Dummy PR** | Paste your code; Gemma reviews it like a maintainer, with a verdict, line-by-line comments (bug / issue / suggestion / style), fixes and a corrected version. |
+| 📈 | **Profile & growth** | Time on Reporbit, repos explored and contributed to, topics, a 12-month heatmap, a growth chart, and *where you were → where you are*. |
+
+<table>
+<tr>
+<td><img src="v3/docs/screenshots/constellation.png" alt="Repository constellation" /></td>
+<td><img src="v3/docs/screenshots/repo-panel.png" alt="Repository detail panel" /></td>
+</tr>
+<tr>
+<td><img src="v3/docs/screenshots/profile.png" alt="Profile page" /></td>
+<td><img src="v3/docs/screenshots/onboarding.png" alt="Onboarding: tech stack" /></td>
+</tr>
+</table>
+
+<sub>Screenshots from a local test build of v3. The repository data and the chat reply shown come from mock services, not live GitHub or Gemma output.</sub>
+
+---
+
+## 🧠 Where Google Gemma does the core work
+
+| Feature | API | Gemma's job |
+|---|---|---|
+| Contribution roadmap | `GET /api/repositories/:id/roadmap` | Turns README and CONTRIBUTING into a 5-step plan, then the server strips invented files and commands |
+| Orbit AI | `POST /api/chat` | Conversational mentor that cites the repo's docs; repo text is treated as untrusted |
+| Dummy PR review | `POST /api/review` | Code review: bugs, security, edge cases and fixes; invalid line numbers are dropped and code is never executed |
+| Onboarding & growth | `/api/me/skills/extract`, `/api/me/growth/story` | Skill extraction from free text; growth story from real data |
+
+**If Gemma is unreachable, Reporbit says so.** It never shows a canned "AI" answer.
+
+- **Model:** Google **Gemma 3** (e.g. `gemma3:4b` via Ollama, or `gemma-3-27b-it` via Google AI Studio). The exact ID is shown in `/api/health` and on every AI response.
+- **Model license:** [Gemma Terms of Use](https://ai.google.dev/gemma/terms). The code's MIT license does **not** relicense the model.
+
+---
+
+## 🗂️ Repository layout
+
+Every stage of the hack night is kept, so you can see how Reporbit evolved:
+
+| Folder | Version | What it is |
+|---|---|---|
+| [`v0/`](v0) | MVP | *Repo Match*: first prototype (Node + matching + AI helper) |
+| [`v1/`](v1) | Orbit 1 | Node + PostgreSQL backend, Orbit React UI, GitHub discovery, Gemma roadmap & mentor |
+| [`v2/`](v2) | Reporbit 2 | Landing page, email/password accounts, onboarding, liquid-glass UI, Dummy PR, casual Orbit AI |
+| [`v3/`](v3) | **Reporbit 3 (current)** | GitHub + GitLab + Bitbucket, ring constellation, profile page with heatmap & growth, caching for faster loads |
+
+`render.yaml` deploys **v3**.
+
+---
+
+## 🚀 Run v3 locally
+
+Requirements: **Node 20+**, **PostgreSQL 13+**, and Gemma via **Ollama** or a **Google AI Studio** key.
 
 ```bash
-cd backend
-cp .env.example .env        # set DATABASE_URL, GITHUB_TOKEN, and the Gemma settings (below)
+cd v3/backend
+cp .env.example .env      # set DATABASE_URL, Gemma settings, GITHUB_TOKEN (never commit .env)
 npm install
+npm run build:frontend    # compiles the React UI into backend/public
 npm run migrate
-npm run seed -- --verify --demo
-npm start                   # open http://localhost:4000
+npm run seed -- --demo
+npm start                 # → http://localhost:4000
 ```
 
-`backend/public/` already contains a compiled build of the frontend, so you don't need to build it.
-After changing anything in `frontend/`, rebuild and re-copy it with:
-```bash
-cd backend && npm run build:frontend
-```
-
-**Frontend dev mode (hot reload):** run `npm start` in `backend/` and `npm run dev` in `frontend/`, then open http://localhost:5173. Vite proxies `/api` to port 4000.
-
-### Gemma (required for the AI features)
-| Option | `.env` |
+| Gemma option | `.env` |
 |---|---|
-| Local, with Ollama | `GEMMA_PROVIDER=ollama`, `GEMMA_MODEL=gemma3:4b` (first run `ollama pull gemma3:4b`; on a low-RAM laptop use `gemma3:1b`) |
-| Google AI Studio | `GEMMA_PROVIDER=google`, `GEMMA_MODEL=gemma-3-27b-it`, `GOOGLE_API_KEY=...` |
+| Local (Ollama) | `GEMMA_PROVIDER=ollama` · `GEMMA_MODEL=gemma3:4b` (run `ollama pull gemma3:4b`) |
+| Hosted (AI Studio) | `GEMMA_PROVIDER=google` · `GEMMA_MODEL=gemma-3-27b-it` · `GOOGLE_API_KEY=…` |
 
-Check it with `curl localhost:4000/api/health`, which should show `"gemma":"ready"`.
+Check that everything is up: `curl localhost:4000/api/health` should show `"database":"ready"` and `"gemma":"ready"`.
 
-### GitHub token (strongly recommended)
-Repository discovery calls GitHub's search API. Anonymous access allows only ~10 searches per minute and 60 requests per hour, which isn't enough for a live demo. Create a token at GitHub → Settings → Developer settings → **Fine-grained token**, with **no permissions** (public read is enough), and put it in `GITHUB_TOKEN=`.
+**Deploy:** Render → *New → Blueprint* → this repo. `render.yaml` builds the frontend and starts the backend from `v3/backend`.
 
-## Where Gemma does the core work
-| Feature | UI | API | What Gemma does |
-|---|---|---|---|
-| Contribution roadmap | "Roadmap" on a repository | `GET /api/repositories/:owner__repo/roadmap` | Writes a 5-step first-contribution plan from the repo's README and CONTRIBUTING. File names and commands that don't appear in those docs are removed. |
-| Orbit AI mentor | Orbit AI tab + floating chat | `POST /api/chat` | Answers questions grounded in the selected repo's docs, cites sources, and treats repo text as untrusted. |
-| Skill extraction, growth story | backend API (profile features) | `/api/me/skills/extract`, `/api/me/growth/story` | Structured extraction and narration of real data. |
+---
 
-If Gemma is unreachable, the chat says so explicitly. **It never shows a canned "AI" answer.** The roadmap falls back to clearly labelled rule-based steps (`generatedBy: "rules"`).
+## 🛠️ Tech stack
 
-**Model:** Google Gemma 3 (the exact ID is shown in every chat reply and in `/api/health`).
-**Model license:** [Gemma Terms of Use](https://ai.google.dev/gemma/terms). **Code license:** MIT (`LICENSE`).
+**Frontend:** React 18, TypeScript, Vite, Tailwind CSS, Framer Motion, React Flow
+**Backend:** Node.js (built-in HTTP server, no framework), PostgreSQL (`pg`); scrypt password hashing, server-side sessions + CSRF
+**AI:** Google Gemma via Ollama or the Gemini API
+**Data:** GitHub REST API, GitLab API v4, Bitbucket API 2.0
 
-The repository match scores, maintainer metrics (median time to merge, merge ratio over the last 30 closed PRs, cadence) and issue difficulty are deterministic and computed from real GitHub data. Anything not measured is shown as "Not measured". See `backend/README.md` for the algorithms, the security model and the tests (`npm test`, 32 tests).
+Security: passwords hashed with scrypt; sessions in PostgreSQL (token hash only); CSRF on every write; every query scoped to the signed-in user; fixed API hosts (no SSRF); secrets only in `.env`.
 
-## Deploy on Render
+---
 
-The repository includes extracted source under `orbit/` and a `render.yaml` Blueprint for a Node web service and PostgreSQL database in the same region.
+## 👥 Team Avengers
 
-1. Sign in to Render and create a Blueprint using this repository.
-2. Enter `GOOGLE_API_KEY` through Render's secret configuration (never commit it). Optionally add `GITHUB_TOKEN` to the web service environment for higher GitHub API allowance.
-3. Review the plans and deploy. The configuration requests free instances; check current account eligibility and limitations before confirming any charges.
-4. Database migrations and the learning-resource seed run before server startup. No demo account is created.
-5. Verify `/api/health`, repository discovery, and an Orbit AI reply at the resulting service URL.
+Samaksh · Pratyush · Harsh · Varun
 
-The frontend's prebuilt assets are served by the same Node process. PostgreSQL external access is disabled. Session cookies use HTTPS. This is a demo deployment configuration: free services can sleep and free databases have expiry/usage limits; check Render's current terms before relying on it for durable hosting.
+## 📄 License
+
+Code: [MIT](LICENSE) · Model: Google Gemma under the [Gemma Terms of Use](https://ai.google.dev/gemma/terms)
