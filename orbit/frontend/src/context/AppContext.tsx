@@ -2,8 +2,9 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { UserProfile, Repository, ChatSession, ChatMessage } from "../types";
 import { apiService, ApiStatus } from "../services/api";
 import { useAuth } from "./AuthContext";
+import { track } from "../services/track";
 
-export type NavTab = "repositories" | "learn" | "chat" | "pr";
+export type NavTab = "repositories" | "learn" | "chat" | "pr" | "profile";
 
 interface AppContextType {
   activeTab: NavTab;
@@ -61,7 +62,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Navigation
   const [activeTab, setActiveTabState] = useState<NavTab>(() => {
     const hash = window.location.hash.replace("#", "") as NavTab;
-    if (["repositories", "learn", "chat", "pr"].includes(hash)) {
+    if (["repositories", "learn", "chat", "pr", "profile"].includes(hash)) {
       return hash;
     }
     return "repositories";
@@ -76,7 +77,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace("#", "") as NavTab;
-      if (["repositories", "learn", "chat", "pr"].includes(hash)) {
+      if (["repositories", "learn", "chat", "pr", "profile"].includes(hash)) {
         setActiveTabState(hash);
       }
     };
@@ -110,7 +111,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Repository selection & modals
-  const [selectedRepo, setSelectedRepo] = useState<Repository | null>(null);
+  const [selectedRepo, setSelectedRepoState] = useState<Repository | null>(null);
+  const setSelectedRepo = (repo: Repository | null) => {
+    if (repo && repo.id !== selectedRepo?.id) track.repo(repo, "viewed");
+    setSelectedRepoState(repo);
+  };
   const [isRoadmapOpen, setIsRoadmapOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isFloatingChatOpen, setIsFloatingChatOpen] = useState(false);
@@ -166,12 +171,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const openChatWithRepo = (repo: Repository) => {
+    track.repo(repo, "chat");
     const repoCtx = { id: repo.id, name: repo.name, owner: repo.owner };
     const sessionId = createChatSession(repoCtx);
     setActiveTab("chat");
   };
 
   const openRoadmapForRepo = (repo: Repository) => {
+    track.repo(repo, "roadmap");
     setSelectedRepo(repo);
     setIsRoadmapOpen(true);
   };

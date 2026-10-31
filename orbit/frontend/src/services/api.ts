@@ -1,5 +1,6 @@
 import { Repository, ContributionRoadmap, LearningPath, GitCurriculumTopic, ChatMessage, UserProfile } from "../types";
 import { MOCK_REPOSITORIES, getOrCreateRoadmap, GIT_CURRICULUM, MOCK_LANGUAGE_PATHS } from "../data/mockData";
+import { track } from "./track";
 
 export interface ApiStatus {
   isLive: boolean;
@@ -81,29 +82,33 @@ class OrbitApiService {
    */
   public async getRepositories(profile?: UserProfile, signal?: AbortSignal): Promise<{ data: Repository[]; isMock: boolean }> {
     if (!this.preferMock) {
-      try {
-        const queryParams = new URLSearchParams();
-        if (profile?.skills?.length) {
-          queryParams.set("skills", profile.skills.join(","));
-        }
-        if (profile?.experienceLevel) {
-          queryParams.set("experience", profile.experienceLevel);
-        }
-
-        const url = `${this.baseUrl}/repositories?${queryParams.toString()}`;
+      const queryParams = new URLSearchParams();
+      if (profile?.skills?.length) queryParams.set("skills", profile.skills.join(","));
+      if (profile?.experienceLevel) queryParams.set("experience", profile.experienceLevel);
+      queryParams.set("limit", "24");
+      const url = `${this.baseUrl}/repositories?${queryParams.toString()}`;
+      const cacheKey = `reporbit_repos:${queryParams.toString()}`;
+      const load = async () => {
         const res = await fetch(url, { signal, credentials: "include" });
-        if (res.ok) {
-          const json = await res.json();
-          if (Array.isArray(json) && json.length > 0) {
-            return { data: json, isMock: false };
-          }
-          if (json.data && Array.isArray(json.data) && json.data.length > 0) {
-            return { data: json.data, isMock: false };
-          }
+        if (!res.ok) return null;
+        const json = await res.json();
+        const data = Array.isArray(json) ? json : Array.isArray(json.data) ? json.data : null;
+        if (data && data.length) { try { localStorage.setItem(cacheKey, JSON.stringify({ at: Date.now(), data })); } catch { /* quota */ } }
+        return data;
+      };
+      // Instant first paint from the last result (≤30 min old), refreshed in the background.
+      try {
+        const cached = JSON.parse(localStorage.getItem(cacheKey) || "null");
+        if (cached && Date.now() - cached.at < 30 * 60e3 && Array.isArray(cached.data) && cached.data.length) {
+          load().catch(() => {});
+          return { data: cached.data, isMock: false };
         }
+      } catch { /* ignore */ }
+      try {
+        const data = await load();
+        if (data && data.length) return { data, isMock: false };
       } catch (err: any) {
         if (err.name === "AbortError") throw err;
-        // Fall back gracefully to mock data
       }
     }
 
@@ -182,6 +187,7 @@ class OrbitApiService {
    */
   public async getLanguageRoadmap(subject: string, signal?: AbortSignal): Promise<{ data: LearningPath | null; isMock: boolean }> {
     const key = subject.trim().toLowerCase();
+    track.topic(subject);
 
     if (!this.preferMock) {
       try {

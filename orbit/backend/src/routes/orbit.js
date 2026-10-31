@@ -9,6 +9,7 @@ import { v, parse } from '../lib/validate.js';
 import { rateLimiter, clientIp } from '../lib/security.js';
 import { requireCsrf } from '../lib/session.js';
 import { recommendRepositories, buildRoadmap, fromRepoId } from '../services/orbit.js';
+import { platformDocs } from '../services/platforms.js';
 import { getRepoDocs } from '../services/github.js';
 import { mentorChat, buildMentorContext, LIMITS } from '../services/mentor.js';
 import { gemmaInfo } from '../services/gemma.js';
@@ -37,14 +38,16 @@ export function orbitRoutes(r) {
     const q = parse(v.object({
       skills: v.string({ max: 500, optional: true }),
       experience: v.string({ max: 20, optional: true }),
-      limit: v.int({ min: 1, max: 12, optional: true }),
+      limit: v.int({ min: 1, max: 30, optional: true }),
+      platforms: v.string({ max: 40, optional: true }),
     }), req.query, 'query');
     const mine = await savedSkills(req);
     const skills = [...new Set([...(q.skills ? q.skills.split(',').map((s) => s.trim()).filter(Boolean) : []), ...mine.skills])].slice(0, 20);
     const experience = (q.experience || mine.experience || 'beginner').toLowerCase();
     try {
-      const data = await recommendRepositories({ skills, experience, limit: q.limit || 8 });
-      res.json({ data, checkedAt: new Date().toISOString(), basedOn: { skills, experience } });
+      const platforms = (q.platforms || 'github,gitlab,bitbucket').split(',').map((p) => p.trim().toLowerCase()).filter((p) => ['github', 'gitlab', 'bitbucket'].includes(p));
+      const out = await recommendRepositories({ skills, experience, limit: q.limit || 20, platforms });
+      res.json({ data: out.data, sources: out.sources, cache: out.cache, tookMs: out.tookMs, checkedAt: new Date().toISOString(), basedOn: { skills, experience } });
     } catch (e) {
       if (e instanceof AppError) throw e;
       if (e.upstream) throw new AppError('UPSTREAM_ERROR', 'GitHub search is unavailable right now');
@@ -54,8 +57,9 @@ export function orbitRoutes(r) {
 
   r.get('/api/repositories/:id/roadmap', async (req, res) => {
     reposLimit(req);
-    const id = fromRepoId(req.params.id);
-    if (!id) throw errors.validation('Repository id must look like owner__repo');
+    const raw = String(req.params.id);
+    const id = /^(gl|bb)__/.test(raw) ? { platformId: raw } : fromRepoId(raw);
+    if (!id) throw errors.validation('Repository id must look like owner__repo, gl__<id> or bb__<workspace>__<slug>');
     const mine = await savedSkills(req);
     const skills = req.query.skills ? String(req.query.skills).split(',').slice(0, 20) : mine.skills;
     res.json(await buildRoadmap({ ...id, skills, experience: req.query.experience || mine.experience || 'beginner' }));
@@ -99,7 +103,15 @@ export function orbitRoutes(r) {
 
     const mine = await savedSkills(req);
     let sources = [], documents = [], issue = null;
-    if (b.repoContext?.id) {
+    if (b.repoContext?.id && /^(gl|bb)__/.test(b.repoContext.id)) {
+      try {
+        const d = await platformDocs(b.repoContext.id);
+        if (d) {
+          if (d.readme) { sources.push({ id: 'S1', title: `${d.fullName} README`, url: d.url }); documents.push({ kind: 'readme', content: d.readme.content, sourceId: 'S1', truncated: d.readme.truncated }); }
+          if (d.contributing) { sources.push({ id: 'S2', title: `${d.fullName} CONTRIBUTING`, url: d.url }); documents.push({ kind: 'contributing', content: d.contributing.content, sourceId: 'S2', truncated: d.contributing.truncated }); }
+        }
+      } catch { /* optional */ }
+    } else if (b.repoContext?.id) {
       const id = fromRepoId(b.repoContext.id) || (b.repoContext.owner && b.repoContext.name ? fromRepoId(`${b.repoContext.owner}__${b.repoContext.name}`) : null);
       if (id) {
         // Server fetches the authoritative docs — the client only names the repo.

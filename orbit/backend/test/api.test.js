@@ -19,6 +19,25 @@ let ghMode = 'ok';
 const ghServer = http.createServer((req, res) => {
   const u = new URL(req.url, 'http://x');
   const send = (code, body, headers = {}) => { res.writeHead(code, { 'Content-Type': 'application/json', 'x-ratelimit-remaining': '50', ...headers }); res.end(typeof body === 'string' ? body : JSON.stringify(body)); };
+  if (u.pathname.startsWith('/gl/')) {
+    const gp = u.pathname.slice(3);
+    if (gp === '/projects') return send(200, [{ id: 42, path: 'gl-tool', path_with_namespace: 'glorg/gl-tool', namespace: { path: 'glorg' }, description: 'GitLab project', web_url: 'https://gitlab.com/glorg/gl-tool', star_count: 33, forks_count: 4, open_issues_count: 6, topics: ['cli'], last_activity_at: now }]);
+    if (gp === '/projects/42/issues') return send(200, [
+      { id: 1, iid: 7, title: 'Add --json flag', web_url: 'https://gitlab.com/glorg/gl-tool/-/issues/7', labels: ['good first issue'], assignees: [], description: 'Steps...', user_notes_count: 0, updated_at: now },
+      { id: 2, iid: 8, title: 'Assigned already', web_url: 'x', labels: ['good first issue'], assignees: [{ id: 1 }], updated_at: now },
+      { id: 3, iid: 9, title: 'Not beginner', web_url: 'x', labels: ['bug'], assignees: [], updated_at: now },
+    ]);
+    if (gp === '/projects/42/languages') return send(200, { TypeScript: 80, Shell: 20 });
+    if (gp === '/projects/42') return send(200, { id: 42, path_with_namespace: 'glorg/gl-tool', web_url: 'https://gitlab.com/glorg/gl-tool', default_branch: 'main' });
+    if (gp.startsWith('/projects/42/repository/files/README.md/raw')) return send(200, '# gl-tool\nRun `make test`.');
+    return send(404, { message: 'nf' });
+  }
+  if (u.pathname.startsWith('/bb/')) {
+    const bp = u.pathname.slice(3);
+    if (bp === '/repositories') return send(200, { values: [{ full_name: 'bbws/bb-lib', description: 'Bitbucket lib', language: 'typescript', links: { html: { href: 'https://bitbucket.org/bbws/bb-lib' } }, updated_on: now, is_private: false }] });
+    if (bp === '/repositories/bbws/bb-lib/issues') return send(200, { size: 1, values: [{ id: 3, title: 'Typo in docs (good first issue)', priority: 'trivial', kind: 'task', content: { raw: 'fix typo' }, updated_on: now, links: { html: { href: 'https://bitbucket.org/bbws/bb-lib/issues/3' } } }] });
+    return send(404, { message: 'nf' });
+  }
   if (ghMode === 'ratelimited') return send(403, { message: 'rate limit' }, { 'x-ratelimit-remaining': '0', 'x-ratelimit-reset': String(Math.floor(Date.now() / 1000) + 120) });
   if (u.pathname === '/search/issues') {
     const q = u.searchParams.get('q');
@@ -97,6 +116,8 @@ const listen = (s) => new Promise((r) => s.listen(0, '127.0.0.1', () => r(`http:
 
 before(async () => {
   process.env.GITHUB_API_URL = await listen(ghServer);
+  process.env.GITLAB_API_URL = `${process.env.GITHUB_API_URL}/gl`;
+  process.env.BITBUCKET_API_URL = `${process.env.GITHUB_API_URL}/bb`;
   const gemmaUrl = await listen(gemmaServer);
   process.env.OLLAMA_URL = gemmaUrl;
   process.env.GEMMA_GOOGLE_BASE_URL = `${gemmaUrl}/v1beta`;
@@ -395,8 +416,17 @@ test('github rate limit -> RATE_LIMITED with Retry-After (or stale cache)', asyn
 test('orbit: /api/repositories builds real-data Repository objects (anonymous OK)', async () => {
   const r = await client().get('/api/repositories?skills=TypeScript,React&experience=Beginner');
   assert.equal(r.status, 200, JSON.stringify(r.body));
-  const repo = r.body.data[0];
-  assert.equal(repo.id, 'acme__widgets');
+  const repo = r.body.data.find((x) => x.id === 'acme__widgets');
+  assert.ok(repo, 'github repo present');
+  assert.deepEqual(r.body.sources, { github: 'ok', gitlab: 'ok', bitbucket: 'ok' });
+  const gl = r.body.data.find((x) => x.platform === 'gitlab');
+  assert.equal(gl.id, 'gl__42');
+  assert.deepEqual(gl.sampleIssues.map((i) => i.number), [7], 'gitlab: assigned and non-beginner issues excluded');
+  const bb = r.body.data.find((x) => x.platform === 'bitbucket');
+  assert.equal(bb.id, 'bb__bbws__bb-lib');
+  assert.equal(bb.starsUnknown, true);
+  const again = await client().get('/api/repositories?skills=TypeScript,React&experience=Beginner');
+  assert.equal(again.body.cache, 'fresh', 'second load served from response cache');
   assert.equal(repo.forks, 7);
   assert.deepEqual(repo.matchedSkills, ['TypeScript']);
   const b = repo.scoreBreakdown;
@@ -426,6 +456,10 @@ test('orbit: roadmap from Gemma is grounded (invented files/commands removed)', 
   assert.equal(r.body.generatedBy, 'rules', 'honest non-AI fallback');
   assert.ok(r.body.note.includes('Gemma unavailable'));
   assert.equal((await client().get('/api/repositories/..%2Fetc/roadmap')).status, 400);
+  const glr = await client().get('/api/repositories/gl__42/roadmap');
+  assert.equal(glr.status, 200, JSON.stringify(glr.body));
+  assert.equal(glr.body.repositoryName, 'glorg/gl-tool');
+  assert.ok(glr.body.prerequisites.includes('A GitLab account'));
 });
 
 test('orbit: /api/chat never fakes AI; grounded answer when Gemma is up', async () => {
@@ -442,6 +476,30 @@ test('orbit: /api/chat never fakes AI; grounded answer when Gemma is up', async 
   assert.ok(!r.body.response.includes('made-up.example'));
   assert.ok(JSON.stringify(lastGemmaRequest.body).includes('untrusted_document'));
   assert.equal((await client().post('/api/chat', { messages: [{ role: 'assistant', content: 'x' }] })).status, 400);
+});
+
+test('profile dashboard: time, repos, topics, heatmap, then vs now', async () => {
+  for (let i = 0; i < 3; i++) assert.equal((await A.post('/api/me/activity', { seconds: 120 })).status, 204);
+  assert.equal((await A.post('/api/me/activity', { seconds: 9999 })).status, 400);
+  await A.post('/api/me/interactions', { repoId: 'acme__widgets', repoName: 'acme/widgets', kind: 'viewed' });
+  await A.post('/api/me/interactions', { repoId: 'acme__widgets', repoName: 'acme/widgets', kind: 'roadmap' });
+  await A.post('/api/me/interactions', { repoId: 'gl__42', repoName: 'glorg/gl-tool', platform: 'gitlab', kind: 'contributed' });
+  await A.post('/api/me/topics', { topic: 'rust' });
+  await A.post('/api/me/topics', { topic: 'Rust' });
+  const r = await A.get('/api/me/dashboard');
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  assert.equal(r.body.timeSpent.totalSeconds, 360);
+  assert.equal(r.body.timeSpent.todaySeconds, 360);
+  assert.equal(r.body.repos.explored, 2);
+  assert.equal(r.body.repos.roadmaps, 1);
+  assert.equal(r.body.repos.contributed, 1);
+  assert.deepEqual(r.body.topics.explored.map((t) => [t.topic, t.count]), [['Rust', 2]]);
+  assert.ok(r.body.heatmap.length >= 365 && r.body.heatmap.length <= 378);
+  assert.ok(r.body.heatmap.at(-1).minutes >= 6 && r.body.heatmap.at(-1).level > 0);
+  assert.ok(r.body.thenVsNow.now.skillCount >= r.body.thenVsNow.then.skillCount);
+  assert.ok(r.body.growth.level.level >= 1);
+  assert.equal((await B.get('/api/me/dashboard')).body.repos.explored, 0, 'other users see only their own data');
+  assert.equal((await A.post('/api/me/interactions', { repoId: 'x__y', repoName: 'x/y', kind: 'hacked' })).status, 400);
 });
 
 test('resources + logout + account deletion', async () => {

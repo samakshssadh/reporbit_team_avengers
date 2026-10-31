@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { AppProvider, useApp } from "./context/AppContext";
 import { Header } from "./components/common/Header";
@@ -11,6 +11,8 @@ import { LandingPage } from "./components/landing/LandingPage";
 import { Onboarding } from "./components/onboarding/Onboarding";
 import { DummyPRPage } from "./components/pr/DummyPRPage";
 import { ReporbitLogo } from "./components/common/ReporbitLogo";
+import { ProfilePage } from "./components/profile/ProfilePage";
+import { startHeartbeat } from "./services/track";
 
 // Living background behind the liquid glass: charcoal base with drifting tangerine / coral light.
 const Ambient: React.FC = () => (
@@ -29,12 +31,15 @@ const MainContent: React.FC = () => {
       {activeTab === "learn" && <LearnPage />}
       {activeTab === "chat" && <OrbitAIChat />}
       {activeTab === "pr" && <DummyPRPage />}
+      {activeTab === "profile" && <ProfilePage />}
     </main>
   );
 };
 
 const Gate: React.FC = () => {
   const { status, profile } = useAuth();
+  // Count active time on Reporbit while signed in (shown on the profile page).
+  useEffect(() => (status === "authed" ? startHeartbeat() : undefined), [status]);
   if (status === "loading") {
     return (
       <div className="relative min-h-screen flex items-center justify-center">

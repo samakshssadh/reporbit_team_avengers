@@ -35,6 +35,8 @@ export interface ContributionIssue {
 
 export interface Repository {
   id: string;
+  platform?: 'github' | 'gitlab' | 'bitbucket';
+  starsUnknown?: boolean;
   name: string;
   owner: string;
   fullName: string;

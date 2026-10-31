@@ -5,6 +5,7 @@ import { authRoutes } from './routes/auth.js';
 import { profileRoutes } from './routes/profile.js';
 import { issueRoutes } from './routes/issues.js';
 import { orbitRoutes } from './routes/orbit.js';
+import { dashboardRoutes } from './routes/dashboard.js';
 import { serveStatic } from './lib/static.js';
 
 export function buildApp() {
@@ -47,5 +48,6 @@ export function buildApp() {
   profileRoutes(r);
   issueRoutes(r);
   orbitRoutes(r);
+  dashboardRoutes(r);
   return r.handler();
 }

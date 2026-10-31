@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from "react";
+import React, { useMemo, useCallback, useEffect } from "react";
 import {
   ReactFlow,
   Controls,
@@ -31,63 +31,53 @@ const ConstellationInner: React.FC<ConstellationCanvasProps> = ({
 }) => {
   const { fitView } = useReactFlow();
 
-  // Stable node generation
-  const initialNodes: Node[] = useMemo(() => {
-    return repositories.map((repo, idx) => {
-      // Deterministic layout coordinates
-      const x = repo.constellation?.x ?? 150 + (idx % 3) * 220;
-      const y = repo.constellation?.y ?? 100 + Math.floor(idx / 3) * 160;
-
-      return {
-        id: repo.id,
-        type: "repositoryNode",
-        position: { x, y },
-        data: {
-          repository: repo,
-          onSelect: onSelectRepo,
-          isSelected: selectedRepo?.id === repo.id,
-        },
-      };
+  // Orbital layout: best match at the centre, then rings of 6, 12, 18… stars.
+  // Equal angular spacing on each ring + ring radius sized to the label width ⇒ no overlaps.
+  const RING_GAP = 170;
+  const ranked = useMemo(() => [...repositories].sort((a, b) => b.matchScore - a.matchScore), [repositories]);
+  const ringOf = (idx: number) => { let ring = 0, cap = 1, start = 0; while (idx >= start + cap) { start += cap; ring += 1; cap = ring * 6; } return { ring, pos: idx - start, cap }; };
+  const positions = useMemo(() => {
+    const total = ranked.length;
+    return ranked.map((_, idx) => {
+      const { ring, pos, cap } = ringOf(idx);
+      if (ring === 0) return { x: 0, y: 0, ring };
+      // last ring may be partially filled: spread its stars evenly around the full circle
+      let start = 1, c = 6, r = 1; while (r < ring) { start += c; r += 1; c = r * 6; }
+      const inRing = Math.min(cap, total - start);
+      const angle = (2 * Math.PI * pos) / inRing + (ring % 2 ? 0 : Math.PI / inRing) - Math.PI / 2;
+      return { x: Math.round(Math.cos(angle) * ring * RING_GAP), y: Math.round(Math.sin(angle) * ring * RING_GAP), ring };
     });
-  }, [repositories, selectedRepo, onSelectRepo]);
+  }, [ranked]);
 
-  // Edges connecting repositories with defined shared relationships
+  const initialNodes: Node[] = useMemo(() => {
+    const stars: Node[] = ranked.map((repo, idx) => ({
+      id: repo.id,
+      type: "repositoryNode",
+      position: positions[idx],
+      data: { repository: repo, onSelect: onSelectRepo, isSelected: selectedRepo?.id === repo.id, rank: idx + 1 },
+    }));
+    return stars;
+  }, [ranked, positions, selectedRepo, onSelectRepo]);
+
+  // Sparse links: each star connects to the best-ranked star above it that shares its main language.
   const initialEdges: Edge[] = useMemo(() => {
     const edges: Edge[] = [];
-    for (let i = 0; i < repositories.length; i++) {
-      for (let j = i + 1; j < repositories.length; j++) {
-        const repoA = repositories[i];
-        const repoB = repositories[j];
-
-        // Connect if they share primary language or AI/frontend domain
-        const sharedLanguages = repoA.languages.filter((l) => repoB.languages.includes(l));
-        const sharedGroup = repoA.constellation?.group === repoB.constellation?.group;
-
-        if (sharedLanguages.length > 0 || sharedGroup) {
-          const isRelatedToSelected =
-            selectedRepo && (selectedRepo.id === repoA.id || selectedRepo.id === repoB.id);
-
-          edges.push({
-            id: `edge-${repoA.id}-${repoB.id}`,
-            source: repoA.id,
-            target: repoB.id,
-            animated: isRelatedToSelected || false,
-            style: {
-              stroke: isRelatedToSelected
-                ? "rgba(254, 133, 0, 0.85)"
-                : "rgba(255, 196, 140, 0.14)",
-              strokeWidth: isRelatedToSelected ? 1.6 : 0.8,
-              strokeDasharray: sharedGroup ? "4 4" : undefined,
-            },
-          });
-        }
-      }
-    }
+    ranked.forEach((repo, idx) => {
+      const parent = ranked.slice(0, idx).find((p) => p.primaryLanguage === repo.primaryLanguage);
+      if (!parent) return;
+      const hot = selectedRepo && (selectedRepo.id === repo.id || selectedRepo.id === parent.id);
+      edges.push({ id: `e-${parent.id}-${repo.id}`, source: parent.id, target: repo.id, animated: !!hot, type: "straight",
+        style: { stroke: hot ? "rgba(254,133,0,0.85)" : "rgba(255,196,140,0.12)", strokeWidth: hot ? 1.5 : 0.8 } });
+    });
     return edges;
-  }, [repositories, selectedRepo]);
+  }, [ranked, selectedRepo]);
 
-  const [nodes, , onNodesChange] = useNodesState(initialNodes);
-  const [edges, , onEdgesChange] = useEdgesState(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  // Keep the sky in sync when results refresh (e.g. cache → live) or the selection changes.
+  useEffect(() => { setNodes(initialNodes); }, [initialNodes, setNodes]);
+  useEffect(() => { setEdges(initialEdges); }, [initialEdges, setEdges]);
+  useEffect(() => { const t = setTimeout(() => fitView({ padding: 0.12, duration: 300 }), 50); return () => clearTimeout(t); }, [ranked.length, fitView]);
 
   const handleResetView = useCallback(() => {
     fitView({ padding: 0.2, duration: 400 });
@@ -95,7 +85,7 @@ const ConstellationInner: React.FC<ConstellationCanvasProps> = ({
 
   // Seamless sky: no container box — the constellation floats on the page's living background.
   return (
-    <div className="relative w-full h-[640px]">
+    <div className="relative w-full h-[720px]">
       <div className="absolute top-2 left-2 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full glass text-xs text-white/75">
         <Network className="w-3.5 h-3.5 text-tangerine-300" />
         <span className="font-medium">Repository Constellation</span>
@@ -116,7 +106,8 @@ const ConstellationInner: React.FC<ConstellationCanvasProps> = ({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         fitView
-        fitViewOptions={{ padding: 0.25 }}
+        fitViewOptions={{ padding: 0.12 }}
+        nodeOrigin={[0.5, 0.5]}
         minZoom={0.4}
         maxZoom={1.8}
         defaultViewport={{ x: 0, y: 0, zoom: 0.85 }}
@@ -128,7 +119,7 @@ const ConstellationInner: React.FC<ConstellationCanvasProps> = ({
 
       <div className="absolute bottom-2 left-2 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full glass text-[11px] text-white/60 max-w-md">
         <Info className="w-3.5 h-3.5 text-tangerine-300 shrink-0" />
-        <span>Bigger, brighter stars match you better. Hover to preview · click to open.</span>
+        <span>Best matches sit at the centre; each outer ring is a lower match. Hover to preview · click to open.</span>
       </div>
     </div>
   );

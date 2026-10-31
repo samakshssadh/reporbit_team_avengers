@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useApp, NavTab } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
-import { Compass, BookOpen, Sparkles, GitPullRequest, SlidersHorizontal, Menu, X, LogOut, ChevronDown } from "lucide-react";
+import { Compass, BookOpen, Sparkles, GitPullRequest, SlidersHorizontal, Menu, X, LogOut, ChevronDown, UserRound } from "lucide-react";
 import { ReporbitLogo } from "./ReporbitLogo";
 
 const NAV: { id: NavTab; label: string; icon: React.FC<{ className?: string }>; badge?: string }[] = [
@@ -62,10 +62,14 @@ export const Header: React.FC = () => {
             <span className="font-mono text-tangerine-300">{profile.skills.length}</span>
           </button>
           <div className="relative" ref={menuRef}>
-            <button onClick={() => setMenuOpen(!menuOpen)} className="flex items-center gap-1.5 pl-1 pr-2 py-1 rounded-full hover:bg-white/10" aria-haspopup="menu" aria-expanded={menuOpen}>
-              <span className="w-8 h-8 rounded-full bg-gradient-to-br from-tangerine-300 to-rose-500 text-[#1b1d27] text-xs font-bold flex items-center justify-center">{initials}</span>
-              <ChevronDown className="w-3.5 h-3.5 text-white/60" />
-            </button>
+            <div className={`flex items-center rounded-full ${activeTab === "profile" ? "liquid-lens" : ""}`}>
+              <button onClick={() => { setMenuOpen(false); setActiveTab("profile"); }} className="p-1 rounded-full hover:bg-white/10" title="My profile" aria-label="Open my profile">
+                <span className="w-8 h-8 rounded-full bg-gradient-to-br from-tangerine-300 to-rose-500 text-[#1b1d27] text-xs font-bold flex items-center justify-center">{initials}</span>
+              </button>
+              <button onClick={() => setMenuOpen(!menuOpen)} className="pr-2 pl-0.5 py-2 rounded-full hover:bg-white/10" aria-haspopup="menu" aria-expanded={menuOpen} aria-label="Account menu">
+                <ChevronDown className="w-3.5 h-3.5 text-white/60" />
+              </button>
+            </div>
             <AnimatePresence>
               {menuOpen && (
                 <motion.div role="menu" initial={{ opacity: 0, y: -6, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6 }}
@@ -74,6 +78,7 @@ export const Header: React.FC = () => {
                     <p className="text-sm font-medium text-white">{user?.displayName}</p>
                     <p className="text-xs text-white/50 truncate">{user?.email}</p>
                   </div>
+                  <button role="menuitem" onClick={() => { setMenuOpen(false); setActiveTab("profile"); }} className="w-full text-left px-3 py-2 rounded-xl text-sm text-white/80 hover:bg-white/10 flex items-center gap-2"><UserRound className="w-4 h-4" /> My profile</button>
                   <button role="menuitem" onClick={() => { setMenuOpen(false); setIsProfileModalOpen(true); }} className="w-full text-left px-3 py-2 rounded-xl text-sm text-white/80 hover:bg-white/10 flex items-center gap-2"><SlidersHorizontal className="w-4 h-4" /> Edit stack & preferences</button>
                   <button role="menuitem" onClick={logout} className="w-full text-left px-3 py-2 rounded-xl text-sm text-rose-300 hover:bg-rose-500/10 flex items-center gap-2"><LogOut className="w-4 h-4" /> Sign out</button>
                 </motion.div>
@@ -96,6 +101,7 @@ export const Header: React.FC = () => {
                 <item.icon className="w-4 h-4" /> {item.label}
               </button>
             ))}
+            <button onClick={() => { setActiveTab("profile"); setMobileOpen(false); }} className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-2xl text-sm ${activeTab === "profile" ? "liquid-lens text-white" : "text-white/75 hover:bg-white/10"}`}><UserRound className="w-4 h-4" /> My profile</button>
             <div className="border-t border-white/10 pt-2 mt-2 flex justify-between">
               <button onClick={() => { setIsProfileModalOpen(true); setMobileOpen(false); }} className="px-3 py-2 text-sm text-white/75">Edit stack</button>
               <button onClick={logout} className="px-3 py-2 text-sm text-rose-300">Sign out</button>

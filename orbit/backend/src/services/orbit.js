@@ -1,10 +1,12 @@
 // Adapter for the Orbit frontend: builds its Repository / ContributionRoadmap shapes from REAL GitHub data.
 // Scoring is deterministic and explained; anything we cannot measure is labelled "Not measured" (never invented).
 import { resolveSkill, githubLanguagesFor, skillForGithubLanguage } from './skillGraph.js';
-import { searchBeginnerIssues, getRepoMeta, getPrMetrics, getRepoDocs, assertRepoId } from './github.js';
+import { searchBeginnerIssues, getRepoMeta, getPrMetrics, getRepoDocs, getCommunity, assertRepoId } from './github.js';
+import { gitlabCandidates, bitbucketCandidates, platformDocs } from './platforms.js';
 import { scoreIssue } from './matching.js';
 import { generateJson } from './gemma.js';
 import { neutralize } from './mentor.js';
+import { AppError } from '../lib/errors.js';
 
 const GROUPS = {
   frontend: ['TypeScript', 'JavaScript', 'HTML', 'CSS', 'Vue', 'Svelte', 'Dart'],
@@ -68,74 +70,142 @@ export function repoScore({ meta, pr, userLangs, userSkillSlugs, experience, iss
 
 const DIFF_MAP = { beginner: 'Easy', intermediate: 'Medium', advanced: 'Hard', unknown: 'Medium' };
 
-export async function recommendRepositories({ skills, experience, limit = 8 }) {
+// Run async jobs with bounded concurrency (fast, but polite to the APIs).
+async function pool(items, size, fn) {
+  const out = new Array(items.length); let i = 0;
+  await Promise.all(Array.from({ length: Math.min(size, items.length) }, async () => { while (i < items.length) { const k = i++; out[k] = await fn(items[k], k).catch(() => null); } }));
+  return out;
+}
+
+// Build one Reporbit Repository object from platform-neutral data.
+function buildRepo({ platform, id, owner, name, fullName, meta, issues, pr, userLangs, userSkillSlugs, slugs, experience, starsUnknown }) {
+  const scoredIssues = issues.map((i) => ({ i, s: scoreIssue(i, { repoLanguages: meta.languages, userSkills: slugs.map((slug) => ({ slug, proficiency: 3 })), experience }) }))
+    .sort((a, b) => b.s.ranking.score - a.s.ranking.score);
+  const sb = repoScore({ meta, pr, userLangs, userSkillSlugs, experience, issueDifficulties: scoredIssues.map((x) => x.s.difficulty.level) });
+  const matchScore = Math.min(100, sb.techStackOverlap + sb.difficultyFit + sb.activityAndResponsiveness + sb.documentationQuality);
+  const easyShare = scoredIssues.filter((x) => x.s.difficulty.level === 'beginner').length / Math.max(1, scoredIssues.length);
+  const group = groupFor(meta);
+  return {
+    id, platform, name, owner, fullName,
+    description: meta.description || '',
+    url: meta.url, stars: meta.stars ?? 0, forks: meta.forks ?? 0, openIssues: meta.openIssues ?? 0,
+    starsUnknown: !!starsUnknown,
+    goodFirstIssuesCount: issues.length,
+    primaryLanguage: meta.language || 'Unknown',
+    languages: meta.languages || [],
+    matchedSkills: sb.matched,
+    topics: meta.topics || [],
+    difficulty: easyShare >= 0.6 ? 'Beginner-Friendly' : easyShare >= 0.25 ? 'Intermediate' : 'Challenging',
+    matchScore,
+    scoreBreakdown: { techStackOverlap: sb.techStackOverlap, difficultyFit: sb.difficultyFit, activityAndResponsiveness: sb.activityAndResponsiveness, documentationQuality: sb.documentationQuality, explanation: sb.explanation },
+    maintainerMetrics: {
+      medianReviewTime: fmtHours(pr?.medianHoursToMerge),
+      mergeRatio: pr && pr.sampled ? `${Math.round((pr.merged / pr.sampled) * 100)}% (last ${pr.sampled} closed PRs)` : 'Not measured',
+      activeMaintainers: pr?.maintainersSeen ?? 0,
+      cadence: meta.pushedAt ? cadence(meta.pushedAt) : 'Sporadic',
+      goodFirstIssueResolutionRate: 'Not measured',
+    },
+    recentUpdate: meta.pushedAt,
+    setupComplexity: (meta.languages || []).length <= 2 ? 'Low' : (meta.languages || []).length <= 4 ? 'Medium' : 'High',
+    readmeCoverage: meta.communityHealth != null ? `Community health ${meta.communityHealth}%` : 'Open the roadmap to check README / CONTRIBUTING',
+    sampleIssues: scoredIssues.slice(0, 3).map(({ i, s }) => ({ id: i.nodeId, number: i.number, title: i.title, labels: i.labels, url: i.url, difficulty: DIFF_MAP[s.difficulty.level] })),
+    constellation: constellation(fullName, group, matchScore),
+    license: meta.license || null,
+    source: platform,
+  };
+}
+
+// In-memory response cache with stale-while-revalidate: repeat visits are instant,
+// and the cache refreshes in the background.
+const RESP = new Map();
+const FRESH_MS = 10 * 60e3, STALE_MS = 60 * 60e3;
+
+export async function recommendRepositories(opts) {
+  const key = JSON.stringify([[...opts.skills].map((s) => s.toLowerCase()).sort(), opts.experience, opts.limit, opts.platforms]);
+  const hit = RESP.get(key);
+  const age = hit ? Date.now() - hit.at : Infinity;
+  if (hit && age < FRESH_MS) return { ...hit.value, cache: 'fresh' };
+  if (hit && age < STALE_MS) {
+    if (!hit.refreshing) { hit.refreshing = true; computeRecommendations(opts).then((value) => RESP.set(key, { at: Date.now(), value })).catch(() => { hit.refreshing = false; }); }
+    return { ...hit.value, cache: 'stale' };
+  }
+  const value = await computeRecommendations(opts);
+  RESP.set(key, { at: Date.now(), value });
+  if (RESP.size > 200) RESP.delete(RESP.keys().next().value);
+  return { ...value, cache: 'miss' };
+}
+
+async function computeRecommendations({ skills, experience, limit = 20, platforms = ['github', 'gitlab', 'bitbucket'] }) {
+  const started = Date.now();
   const slugs = skills.map((s) => resolveSkill(s).slug);
   const userSkillSlugs = new Set(slugs);
   const userLangs = new Set(githubLanguagesFor(slugs).map((l) => l.toLowerCase()));
-  const languages = githubLanguagesFor(slugs).slice(0, 3);
-  const results = await Promise.all((languages.length ? languages : [null]).map((language) => searchBeginnerIssues({ language, page: 1, perPage: 30 }).catch(() => null)));
-  if (results.every((r) => !r)) throw Object.assign(new Error('GitHub search unavailable'), { upstream: true });
-  // group real issues by repository
-  const byRepo = new Map();
-  for (const r of results) {
-    if (!r) continue;
-    for (const it of r.data.items) {
-      if (it.isPullRequest || it.state !== 'open' || it.assignees.length) continue;
-      const k = `${it.owner}/${it.repo}`;
-      if (!byRepo.has(k)) byRepo.set(k, { owner: it.owner, repo: it.repo, issues: [], seen: new Set() });
-      const entry = byRepo.get(k);
-      if (entry.seen.has(it.number)) continue; // same issue can match several language searches
-      entry.seen.add(it.number);
-      entry.issues.push(it);
+  const languages = githubLanguagesFor(slugs).slice(0, 4);
+  const langList = languages.length ? languages : [null];
+  const sources = { github: 'skipped', gitlab: 'skipped', bitbucket: 'skipped' };
+  const ctx = { userLangs, userSkillSlugs, slugs, experience };
+
+  // Fire all platforms in parallel.
+  const ghTask = platforms.includes('github') ? (async () => {
+    const results = await Promise.all(langList.map((language) => searchBeginnerIssues({ language, page: 1, perPage: 50 }).catch(() => null)));
+    if (results.every((r) => !r)) { sources.github = 'unavailable'; return []; }
+    sources.github = 'ok';
+    const byRepo = new Map();
+    for (const r of results) {
+      if (!r) continue;
+      for (const it of r.data.items) {
+        if (it.isPullRequest || it.state !== 'open' || it.assignees.length) continue;
+        const k = `${it.owner}/${it.repo}`;
+        if (!byRepo.has(k)) byRepo.set(k, { owner: it.owner, repo: it.repo, issues: [], seen: new Set() });
+        const entry = byRepo.get(k);
+        if (entry.seen.has(it.number)) continue; // same issue can match several language searches
+        entry.seen.add(it.number);
+        entry.issues.push(it);
+      }
     }
-  }
-  const candidates = [...byRepo.values()].sort((a, b) => b.issues.length - a.issues.length).slice(0, limit + 4);
-  const repos = [];
-  for (const c of candidates) {
-    let meta;
-    try { meta = (await getRepoMeta(c.owner, c.repo)).data; } catch { continue; }
-    if (meta.archived) continue;
-    let docs = null; try { docs = (await getRepoDocs(c.owner, c.repo)).data; } catch { /* optional */ }
-    meta.communityHealth = docs?.community?.healthPercentage ?? null;
-    let pr = null; try { pr = (await getPrMetrics(c.owner, c.repo)).data; } catch { /* optional, e.g. rate limit */ }
-    const scoredIssues = c.issues.map((i) => ({ i, s: scoreIssue(i, { repoLanguages: meta.languages, userSkills: slugs.map((slug) => ({ slug, proficiency: 3 })), experience }) }))
-      .sort((a, b) => b.s.ranking.score - a.s.ranking.score);
-    const sb = repoScore({ meta, pr, userLangs, userSkillSlugs, experience, issueDifficulties: scoredIssues.map((x) => x.s.difficulty.level) });
-    const matchScore = Math.min(100, sb.techStackOverlap + sb.difficultyFit + sb.activityAndResponsiveness + sb.documentationQuality);
-    const easyShare = scoredIssues.filter((x) => x.s.difficulty.level === 'beginner').length / Math.max(1, scoredIssues.length);
-    const group = groupFor(meta);
-    repos.push({
-      id: toRepoId(c.owner, c.repo),
-      name: c.repo, owner: c.owner, fullName: meta.fullName || `${c.owner}/${c.repo}`,
-      description: meta.description || '',
-      url: meta.url, stars: meta.stars ?? 0, forks: meta.forks ?? 0, openIssues: meta.openIssues ?? 0,
-      goodFirstIssuesCount: c.issues.length,
-      primaryLanguage: meta.language || 'Unknown',
-      languages: meta.languages || [],
-      matchedSkills: sb.matched,
-      topics: meta.topics || [],
-      difficulty: easyShare >= 0.6 ? 'Beginner-Friendly' : easyShare >= 0.25 ? 'Intermediate' : 'Challenging',
-      matchScore,
-      scoreBreakdown: { techStackOverlap: sb.techStackOverlap, difficultyFit: sb.difficultyFit, activityAndResponsiveness: sb.activityAndResponsiveness, documentationQuality: sb.documentationQuality, explanation: sb.explanation },
-      maintainerMetrics: {
-        medianReviewTime: fmtHours(pr?.medianHoursToMerge),
-        mergeRatio: pr && pr.sampled ? `${Math.round((pr.merged / pr.sampled) * 100)}% (last ${pr.sampled} closed PRs)` : 'Not measured',
-        activeMaintainers: pr?.maintainersSeen ?? 0,
-        cadence: cadence(meta.pushedAt),
-        goodFirstIssueResolutionRate: 'Not measured',
-      },
-      recentUpdate: meta.pushedAt,
-      setupComplexity: (meta.languages || []).length <= 2 ? 'Low' : (meta.languages || []).length <= 4 ? 'Medium' : 'High',
-      // setupCommand deliberately omitted: we never invent commands. The roadmap quotes documented ones.
-      readmeCoverage: docs ? `${docs.readme ? 'README' : 'No README'}${docs.contributing ? ` + ${docs.contributing.path}` : ', no CONTRIBUTING guide'}${meta.communityHealth != null ? ` · community health ${meta.communityHealth}%` : ''}` : 'Not checked',
-      sampleIssues: scoredIssues.slice(0, 3).map(({ i, s }) => ({ id: i.nodeId, number: i.number, title: i.title, labels: i.labels, url: i.url, difficulty: DIFF_MAP[s.difficulty.level] })),
-      constellation: constellation(meta.fullName || `${c.owner}/${c.repo}`, group, matchScore),
-      license: meta.license,
-      source: 'github',
+    const candidates = [...byRepo.values()].sort((a, b) => b.issues.length - a.issues.length).slice(0, limit + 6);
+    // Expensive PR-metrics search only for the strongest candidates (GitHub search quota is 30/min).
+    const built = await pool(candidates, 8, async (c, idx) => {
+      const meta = { ...(await getRepoMeta(c.owner, c.repo)).data };
+      if (meta.archived) return null;
+      try { meta.communityHealth = (await getCommunity(c.owner, c.repo)).data?.healthPercentage ?? null; } catch { meta.communityHealth = null; }
+      let pr = null;
+      if (idx < 10) { try { pr = (await getPrMetrics(c.owner, c.repo)).data; } catch { /* quota */ } }
+      return buildRepo({ platform: 'github', id: toRepoId(c.owner, c.repo), owner: c.owner, name: c.repo, fullName: meta.fullName || `${c.owner}/${c.repo}`, meta, issues: c.issues, pr, ...ctx });
     });
-    if (repos.length >= limit) break;
-  }
-  return repos.sort((a, b) => b.matchScore - a.matchScore);
+    return built.filter(Boolean);
+  })() : Promise.resolve([]);
+
+  const glTask = platforms.includes('gitlab') ? (async () => {
+    const lists = await Promise.all(langList.slice(0, 2).map((l) => gitlabCandidates(l, 4).catch(() => null)));
+    if (lists.every((x) => !x)) { sources.gitlab = 'unavailable'; return []; }
+    sources.gitlab = 'ok';
+    const seen = new Set();
+    return lists.flat().filter((p) => p && p.issues.length && !seen.has(p.id) && seen.add(p.id)).map((p) => buildRepo({
+      platform: 'gitlab', id: p.id, owner: p.owner, name: p.name, fullName: p.fullName,
+      meta: { description: p.description, url: p.url, stars: p.stars, forks: p.forks, openIssues: p.openIssues, topics: p.topics, language: p.language, languages: p.languages, pushedAt: p.pushedAt, communityHealth: null },
+      issues: p.issues, pr: null, ...ctx,
+    }));
+  })() : Promise.resolve([]);
+
+  const bbTask = platforms.includes('bitbucket') ? (async () => {
+    const lists = await Promise.all(langList.slice(0, 2).map((l) => bitbucketCandidates(l, 2).catch(() => null)));
+    if (lists.every((x) => !x)) { sources.bitbucket = 'unavailable'; return []; }
+    sources.bitbucket = 'ok';
+    const seen = new Set();
+    return lists.flat().filter((p) => p && !seen.has(p.id) && seen.add(p.id)).map((p) => buildRepo({
+      platform: 'bitbucket', id: p.id, owner: p.owner, name: p.name, fullName: p.fullName, starsUnknown: true,
+      meta: { description: p.description, url: p.url, stars: 0, forks: 0, openIssues: p.openIssues, topics: [], language: p.language, languages: p.languages, pushedAt: p.pushedAt, communityHealth: null },
+      issues: p.issues, pr: null, ...ctx,
+    }));
+  })() : Promise.resolve([]);
+
+  const [gh, gl, bb] = await Promise.all([ghTask, glTask, bbTask]);
+  if (!gh.length && !gl.length && !bb.length && sources.github === 'unavailable') throw Object.assign(new Error('All platforms unavailable'), { upstream: true });
+  // Keep GitHub as the backbone, but guarantee other platforms are represented when they returned results.
+  const ghTop = gh.sort((a, b) => b.matchScore - a.matchScore).slice(0, Math.max(0, limit - Math.min(gl.length, 4) - Math.min(bb.length, 2)));
+  const data = [...ghTop, ...gl.slice(0, 4), ...bb.slice(0, 2)].sort((a, b) => b.matchScore - a.matchScore).slice(0, limit);
+  return { data, sources, tookMs: Date.now() - started };
 }
 
 // ---------- Contribution roadmap (Gemma, grounded in README + CONTRIBUTING) ----------
@@ -177,22 +247,30 @@ const checkRoadmap = (x) => {
   return x;
 };
 
-export async function buildRoadmap({ owner, repo, skills, experience }) {
-  const docs = (await getRepoDocs(owner, repo)).data;
-  let meta = null; try { meta = (await getRepoMeta(owner, repo)).data; } catch { /* optional */ }
-  let topIssue = null;
-  try {
+export async function buildRoadmap({ owner, repo, platformId, skills, experience }) {
+  let docs, meta = null, topIssue = null, repoUrl;
+  if (platformId) {
+    docs = await platformDocs(platformId);
+    if (!docs) throw new AppError('NOT_FOUND', 'Repository not found on its platform');
+    [owner, repo] = [docs.fullName.split('/').slice(0, -1).join('/'), docs.fullName.split('/').pop()];
+    repoUrl = docs.url;
+  } else {
+    docs = (await getRepoDocs(owner, repo)).data;
+    repoUrl = `https://github.com/${owner}/${repo}`;
+    try { meta = (await getRepoMeta(owner, repo)).data; } catch { /* optional */ }
+  }
+  if (!platformId) try {
     const lang = meta?.language || null;
     const r = await searchBeginnerIssues({ language: lang, page: 1, perPage: 30 });
     topIssue = r.data.items.find((i) => i.owner?.toLowerCase() === owner.toLowerCase() && i.repo?.toLowerCase() === repo.toLowerCase() && !i.assignees.length) || null;
   } catch { /* optional */ }
   const base = {
-    repositoryId: toRepoId(owner, repo),
+    repositoryId: platformId || toRepoId(owner, repo),
     repositoryName: `${owner}/${repo}`,
-    prerequisites: [...new Set([meta?.language && `Comfort with ${meta.language}`, 'Git basics (fork, branch, commit, push)', 'A GitHub account'].filter(Boolean))],
+    prerequisites: [...new Set([meta?.language && `Comfort with ${meta.language}`, 'Git basics (fork, branch, commit, push)', platformId?.startsWith('gl__') ? 'A GitLab account' : platformId ? 'A Bitbucket account' : 'A GitHub account'].filter(Boolean))],
     sources: [
-      { id: 'S1', title: `${owner}/${repo} README`, url: `https://github.com/${owner}/${repo}#readme`, available: !!docs?.readme },
-      { id: 'S2', title: `${owner}/${repo} ${docs?.contributing?.path || 'CONTRIBUTING'}`, url: `https://github.com/${owner}/${repo}/blob/HEAD/${docs?.contributing?.path || 'CONTRIBUTING.md'}`, available: !!docs?.contributing },
+      { id: 'S1', title: `${owner}/${repo} README`, url: platformId ? repoUrl : `${repoUrl}#readme`, available: !!docs?.readme },
+      { id: 'S2', title: `${owner}/${repo} ${docs?.contributing?.path || 'CONTRIBUTING'}`, url: platformId ? repoUrl : `${repoUrl}/blob/HEAD/${docs?.contributing?.path || 'CONTRIBUTING.md'}`, available: !!docs?.contributing },
     ].filter((s) => s.available).map(({ available, ...s }) => s),
   };
   const docText = `${docs?.readme?.content || ''}\n${docs?.contributing?.content || ''}`;

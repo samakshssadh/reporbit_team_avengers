@@ -190,3 +190,12 @@ export async function getPrMetrics(owner, repo) {
     return { sampled: items.length, merged: merged.length, medianHoursToMerge: median, maintainersSeen: maintainers.size };
   });
 }
+
+// Community profile only (1 call, cached) — used for the documentation score in discovery lists.
+export async function getCommunity(owner, repo) {
+  assertRepoId(owner, repo);
+  return cached(`community:${owner}/${repo}`.toLowerCase(), 6 * 3600, async () => {
+    const c = await gh(`/repos/${owner}/${repo}/community/profile`, { allow404: true });
+    return c ? { healthPercentage: c.health_percentage ?? null } : null;
+  });
+}

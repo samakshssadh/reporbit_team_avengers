@@ -187,6 +187,11 @@ export function profileRoutes(r) {
       if (b.codingSince !== undefined) col('coding_since', b.codingSince ? b.codingSince.slice(0, 10) : null);
       if (b.isPublic !== undefined) col('is_public', b.isPublic);
       if (b.onboarded !== undefined) col('onboarded', b.onboarded);
+      if (b.onboarded === true) {
+        // Snapshot of where the user started (only the first time).
+        const snap = { at: new Date().toISOString(), skills: b.skills || [], experienceMonths: b.experienceMonths ?? null, priorContributions: b.priorContributions ?? 0, profession: b.profession ?? null };
+        vals.push(JSON.stringify(snap)); sets.push(`onboarding_snapshot = COALESCE(onboarding_snapshot, $${vals.length}::jsonb)`);
+      }
       if (sets.length) { vals.push(req.user.id); await c.query(`UPDATE profiles SET ${sets.join(', ')}, updated_at = now() WHERE user_id = $${vals.length}`, vals); }
       if (b.displayName !== undefined || b.githubLogin !== undefined) {
         if (b.githubLogin) {

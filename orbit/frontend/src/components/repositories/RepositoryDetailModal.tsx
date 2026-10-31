@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Repository } from "../../types";
-import { X, ExternalLink, Sparkles, Map, Star, GitFork, Clock, Users, Activity, GitMerge, CircleDot, FileText, Layers } from "lucide-react";
+import { X, ExternalLink, Sparkles, Map, Star, GitFork, Clock, Users, Activity, GitMerge, CircleDot, FileText, Layers, CheckCircle2 } from "lucide-react";
 import { formatNumber, formatRelativeTime, isSafeUrl } from "../../lib/utils";
+import { track } from "../../services/track";
 
 interface RepositoryDetailModalProps {
   repository: Repository | null;
@@ -54,6 +55,14 @@ const DIFF_STYLE: Record<string, string> = { Easy: "bg-emerald-500/15 text-emera
 
 export const RepositoryDetailModal: React.FC<RepositoryDetailModalProps> = ({ repository, onClose, onExplainWithAI, onProceedWithRoadmap }) => {
   const [tab, setTab] = useState<Tab>("Overview");
+  const contribKey = repository ? `reporbit_contrib:${repository.id}` : "";
+  const [contributed, setContributed] = useState(false);
+  useEffect(() => { setContributed(!!(contribKey && localStorage.getItem(contribKey))); }, [contribKey]);
+  const toggleContributed = () => {
+    if (!repository) return;
+    if (contributed) { track.unContribute(repository.id).catch(() => {}); localStorage.removeItem(contribKey); setContributed(false); }
+    else { track.repo(repository, "contributed"); localStorage.setItem(contribKey, "1"); setContributed(true); }
+  };
   useEffect(() => { setTab("Overview"); }, [repository?.id]);
   useEffect(() => {
     const h = (e: KeyboardEvent) => { if (e.key === "Escape" && repository) onClose(); };
@@ -82,7 +91,8 @@ export const RepositoryDetailModal: React.FC<RepositoryDetailModalProps> = ({ re
                 <h2 id="repo-detail-title" className="mt-1 text-3xl sm:text-4xl font-semibold tracking-tight text-white truncate">{repository.name}</h2>
                 <p className="mt-2 text-white/65 leading-relaxed line-clamp-2">{repository.description || "No description provided."}</p>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                  <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/5 border border-white/10"><Star className="w-3 h-3 text-tangerine-300" />{formatNumber(repository.stars)}</span>
+                  {repository.platform && repository.platform !== "github" && <span className="px-2.5 py-1 rounded-full bg-rose-500/15 border border-rose-400/25 text-rose-100 capitalize">{repository.platform}</span>}
+                  {!repository.starsUnknown && <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/5 border border-white/10"><Star className="w-3 h-3 text-tangerine-300" />{formatNumber(repository.stars)}</span>}
                   <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/5 border border-white/10"><GitFork className="w-3 h-3" />{formatNumber(repository.forks)}</span>
                   {repository.languages.slice(0, 5).map((l) => (
                     <span key={l} className={`px-2.5 py-1 rounded-full border ${repository.matchedSkills.includes(l) ? "bg-tangerine-500/20 border-tangerine-400/30 text-tangerine-100" : "bg-white/5 border-white/10 text-white/70"}`}>{l}</span>
@@ -174,7 +184,12 @@ export const RepositoryDetailModal: React.FC<RepositoryDetailModalProps> = ({ re
 
             {/* Sticky actions */}
             <div className="relative px-6 sm:px-10 py-4 border-t border-white/10 bg-black/10 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-              <a href={isSafeUrl(repository.url) ? repository.url : "#"} target="_blank" rel="noopener noreferrer" className="text-sm text-white/60 hover:text-white flex items-center gap-1.5"><ExternalLink className="w-4 h-4" /> View on GitHub</a>
+              <div className="flex items-center gap-4">
+                <a href={isSafeUrl(repository.url) ? repository.url : "#"} target="_blank" rel="noopener noreferrer" className="text-sm text-white/60 hover:text-white flex items-center gap-1.5"><ExternalLink className="w-4 h-4" /> View on {repository.platform === "gitlab" ? "GitLab" : repository.platform === "bitbucket" ? "Bitbucket" : "GitHub"}</a>
+                <button onClick={toggleContributed} className={`text-sm flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition ${contributed ? "bg-emerald-500/20 border-emerald-400/30 text-emerald-200" : "border-white/15 text-white/60 hover:text-white"}`}>
+                  <CheckCircle2 className="w-4 h-4" /> {contributed ? "Contributed ✓" : "I contributed here"}
+                </button>
+              </div>
               <div className="flex gap-3">
                 <button onClick={() => onExplainWithAI(repository)} className="glass px-5 py-3 rounded-2xl text-sm text-white flex items-center gap-2 hover:bg-white/10"><Sparkles className="w-4 h-4 text-tangerine-300" /> Ask Orbit AI</button>
                 <button onClick={() => onProceedWithRoadmap(repository)} className="btn-tangerine px-5 py-3 rounded-2xl text-sm flex items-center gap-2"><Map className="w-4 h-4" /> Generate roadmap</button>
