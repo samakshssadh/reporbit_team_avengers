@@ -28,15 +28,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setStatus("authed");
   }, []);
 
+  // Only a definite "not signed in" answer logs you out. A network blip or a server that is still
+  // starting is retried quietly, so you are never sent back to the login screen by accident.
   const refresh = useCallback(async () => {
-    try {
-      const s = await authApi.session();
-      setCsrf(s.csrfToken);
-      if (s.authenticated) await loadMe();
-      else { setUser(null); setProfile(null); setStatus("guest"); }
-    } catch {
-      setStatus("guest");
+    for (let attempt = 0; attempt < 6; attempt++) {
+      try {
+        const s = await authApi.session();
+        setCsrf(s.csrfToken);
+        if (s.authenticated) await loadMe();
+        else { setUser(null); setProfile(null); setStatus("guest"); }
+        return;
+      } catch {
+        await new Promise((r) => setTimeout(r, Math.min(4000, 500 * 2 ** attempt)));
+      }
     }
+    setStatus((st) => (st === "authed" ? st : "guest"));
   }, [loadMe]);
 
   useEffect(() => { refresh(); }, [refresh]);

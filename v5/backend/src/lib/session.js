@@ -27,18 +27,24 @@ export async function destroySession(req, res) {
 }
 
 // Middleware: attach req.user / req.session when a valid cookie is present.
-export async function loadSession(req) {
+// Sliding sessions: every visit pushes the expiry forward (at most once an hour),
+// so anyone who keeps using Reporbit stays signed in; only a long absence logs you out.
+export async function loadSession(req, res) {
   const token = req.cookies[COOKIE];
   if (!token || token.length > 100) return;
+  const ttl = config.sessionTtlHours * 3600;
   const { rows } = await query(
-    `UPDATE sessions s SET last_seen_at = now()
+    `UPDATE sessions s SET last_seen_at = now(),
+            expires_at = CASE WHEN s.expires_at < now() + make_interval(secs => $2) - interval '1 hour'
+                              THEN now() + make_interval(secs => $2) ELSE s.expires_at END
        FROM users u
       WHERE s.token_hash = $1 AND s.expires_at > now() AND u.id = s.user_id
-      RETURNING s.csrf_token, u.id, u.email, u.display_name, u.handle, u.github_login, u.avatar_url, u.created_at`,
-    [sha256(token)],
+      RETURNING (s.expires_at > now() + make_interval(secs => $2) - interval '1 minute') AS renewed, s.csrf_token, u.id, u.email, u.display_name, u.handle, u.github_login, u.avatar_url, u.created_at`,
+    [sha256(token), ttl],
   );
   if (!rows.length) return;
   const r = rows[0];
+  if (r.renewed && res?.cookie) res.cookie(COOKIE, token, { httpOnly: true, secure: config.cookieSecure, sameSite: 'Lax', maxAge: ttl });
   req.session = { csrfToken: r.csrf_token, tokenHash: sha256(token) };
   req.user = { id: r.id, email: r.email, displayName: r.display_name, handle: r.handle, githubLogin: r.github_login, avatarUrl: r.avatar_url, createdAt: r.created_at };
 }

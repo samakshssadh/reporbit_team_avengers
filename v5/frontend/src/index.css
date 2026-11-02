@@ -275,7 +275,7 @@ html.light .ambient {
     radial-gradient(700px 500px at 10% 100%, rgba(255,214,150,0.35), transparent 60%),
     linear-gradient(180deg, #fbf3ea 0%, #f3e5d6 100%) !important;
 }
-html.light .ambient .blob { opacity: .35 !important; mix-blend-mode: multiply; }
+html.light .ambient .blob { opacity: .35 !important; }
 html.light .glass {
   background: linear-gradient(140deg, rgba(255,252,247,0.9), rgba(255,244,232,0.78)) !important;
   border-color: rgba(110,60,15,0.14) !important;
@@ -313,7 +313,7 @@ html.light .bg-neutral-950, html.light .bg-neutral-950 * { color: #f3ead8 !impor
 html.light .react-flow__edge.edge-dim .react-flow__edge-path { stroke: rgba(150,72,10,0.38) !important; stroke-width: 1.2px !important; }
 html.light .react-flow__edge.edge-hot .react-flow__edge-path { stroke: rgba(214,92,0,0.95) !important; stroke-width: 2px !important; }
 html.light .rf-star-core { box-shadow: 0 0 0 1.5px rgba(150,60,0,.55), 0 4px 14px -2px rgba(200,80,0,.55) !important; }
-html.light .rf-star-glow { opacity: .55 !important; mix-blend-mode: multiply; }
+html.light .rf-star-glow { opacity: .55 !important; }
 html.light .rf-star-label { color: #1d1a17 !important; font-weight: 600; text-shadow: 0 1px 0 rgba(255,250,242,.9), 0 0 6px rgba(255,248,238,.95); }
 html.light .rf-star-score { color: #a54600 !important; font-weight: 600; }
 /* splash + landing helpers */
@@ -335,3 +335,10 @@ html.light [class*="text-indigo-200"], html.light [class*="text-indigo-300"], ht
 html.light [class*="text-emerald-100"], html.light [class*="text-emerald-200"], html.light [class*="text-emerald-300"] { color: #046c4e !important; }
 html.light [class*="text-rose-100"], html.light [class*="text-rose-200"], html.light [class*="text-rose-300"] { color: #b0123f !important; }
 html.light [class*="text-sky-200"], html.light [class*="text-sky-300"] { color: #075985 !important; }
+/* light-mode performance: panels are near-opaque here, so skip costly live blurs/animations */
+html.light .glass, html.light .glass-strong, html.light .liquid-pill, html.light [class*="backdrop-blur"] { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+html.light .glass { background: linear-gradient(140deg, #fffbf6, #fff1e3) !important; }
+html.light .liquid-pill { background: linear-gradient(180deg, #fffaf4, #fff0e0) !important; }
+html.light .ambient .blob { animation: none !important; filter: none !important; display: none; }
+html.light .rf-star-glow { filter: none !important; }
+html.light .bg-black\/50, html.light .bg-black\/60 { background-color: rgba(60,35,15,.45) !important; }

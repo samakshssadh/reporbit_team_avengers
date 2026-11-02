@@ -27,7 +27,7 @@ export const config = {
   databaseUrl: env.DATABASE_URL || '',
   corsOrigin: env.CORS_ORIGIN || '',
   cookieSecure: env.COOKIE_SECURE === 'true',
-  sessionTtlHours: int(env.SESSION_TTL_HOURS, 168),
+  sessionTtlHours: Math.max(int(env.SESSION_TTL_HOURS, 720), 720),
   githubToken: env.GITHUB_TOKEN || '',
   // Optional GitHub OAuth app (Settings → Developer settings → OAuth Apps). Without it, users link by username.
   githubClientId: env.GITHUB_CLIENT_ID || '',
