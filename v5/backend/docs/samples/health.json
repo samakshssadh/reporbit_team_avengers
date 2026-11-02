@@ -1,0 +1,10 @@
+{
+  "status": "degraded",
+  "dependencies": {
+    "database": "ready",
+    "github": "ready",
+    "gemma": "unconfigured"
+  },
+  "model": null,
+  "githubAuth": "token"
+}

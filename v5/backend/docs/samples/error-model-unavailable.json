@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": "MODEL_UNAVAILABLE",
+    "message": "Gemma is not configured on the server (set GEMMA_PROVIDER and GEMMA_MODEL)",
+    "retryable": true,
+    "requestId": "bc09e62b-fba1-4d00-b126-db888122e30b"
+  }
+}

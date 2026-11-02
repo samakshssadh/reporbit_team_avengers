@@ -72,18 +72,19 @@ Every stage of the hack night is kept, so you can see how Reporbit evolved:
 | [`v1/`](v1) | Orbit 1 | Node + PostgreSQL backend, Orbit React UI, GitHub discovery, Gemma roadmap & mentor |
 | [`v2/`](v2) | Reporbit 2 | Landing page, email/password accounts, onboarding, liquid-glass UI, Dummy PR, casual Orbit AI |
 | [`v3/`](v3) | Reporbit 3 | GitHub + GitLab + Bitbucket, ring constellation, profile page with heatmap & growth, caching for faster loads |
-| [`v4/`](v4) | **Reporbit 4 (current)** | Dummy PR accepts project .zip uploads (no 500-line limit), Gemma 4 support |
+| [`v4/`](v4) | Reporbit 4 | Dummy PR accepts project .zip uploads (no 500-line limit), Gemma 4 support |
+| [`v5/`](v5) | **Reporbit 5 (current)** | Light/Dark theme, Connect GitHub (verified contributions), Learn → tech stack, badge guide, instant GitHub repo search, personalised AI roadmaps, Connect-to-Orbit-AI, deletable chats, boot animation |
 
-`render.yaml` deploys **v4**.
+`render.yaml` deploys **v5**.
 
 ---
 
-## 🚀 Run v4 locally
+## 🚀 Run v5 locally
 
 Requirements: **Node 20+**, **PostgreSQL 13+**, and Gemma via **Ollama** or a **Google AI Studio** key.
 
 ```bash
-cd v4/backend
+cd v5/backend
 cp .env.example .env      # set DATABASE_URL, Gemma settings, GITHUB_TOKEN (never commit .env)
 npm install
 npm run build:frontend    # compiles the React UI into backend/public
@@ -99,7 +100,7 @@ npm start                 # → http://localhost:4000
 
 Check that everything is up: `curl localhost:4000/api/health` should show `"database":"ready"` and `"gemma":"ready"`.
 
-**Deploy:** Render → *New → Blueprint* → this repo. `render.yaml` builds the frontend and starts the backend from `v4/backend`.
+**Deploy:** Render → *New → Blueprint* → this repo. `render.yaml` builds the frontend and starts the backend from `v5/backend`.
 
 ---
 

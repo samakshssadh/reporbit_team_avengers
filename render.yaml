@@ -4,7 +4,7 @@ services:
     runtime: node
     plan: free
     region: singapore
-    rootDir: v4/backend
+    rootDir: v5/backend
     # Compiles the React frontend, copies it into backend/public, then installs the backend.
     buildCommand: cd ../frontend && npm ci --include=dev && npm run build && rm -rf ../backend/public && cp -r dist ../backend/public && cd ../backend && npm ci --omit=dev
     startCommand: npm run migrate && npm run seed && npm start
