@@ -1,0 +1,855 @@
+{
+  "user": {
+    "displayName": "Demo Student",
+    "handle": "demo-student",
+    "githubLogin": null,
+    "avatarUrl": null,
+    "joinedAt": "2025-09-25T21:31:57.815Z"
+  },
+  "profile": {
+    "headline": "CS student · learning full-stack",
+    "bio": "Started with Python in first year, now building with TypeScript and Node.",
+    "location": "Hyderabad, India",
+    "skills": [
+      "Python",
+      "Git",
+      "HTML & CSS",
+      "JavaScript",
+      "SQL",
+      "Node.js",
+      "React",
+      "TypeScript",
+      "PostgreSQL",
+      "Express"
+    ],
+    "interests": [
+      "web development",
+      "open source",
+      "ai"
+    ],
+    "experience": "intermediate",
+    "links": {},
+    "codingSince": "2025-09-05"
+  },
+  "growth": {
+    "level": {
+      "level": 5,
+      "title": "Builder",
+      "xp": 1089,
+      "currentLevelXp": 1000,
+      "nextLevelXp": 1500,
+      "progress": 0.18
+    },
+    "totals": {
+      "skills": 10,
+      "skillsLearned": 6,
+      "skillsLearning": 4,
+      "languages": 5,
+      "contributions": 15,
+      "byKind": {
+        "issue": 2,
+        "docs": 2,
+        "pull_request": 8,
+        "commit": 1,
+        "review": 2
+      },
+      "byStatus": {
+        "completed": 7,
+        "merged": 5,
+        "closed": 1,
+        "open": 2
+      },
+      "pullRequests": 8,
+      "mergedPullRequests": 5,
+      "mergeRate": 0.63,
+      "repositories": 6
+    },
+    "streaks": {
+      "currentWeeks": 4,
+      "longestWeeks": 4,
+      "activeDays": 35
+    },
+    "evolution": {
+      "path": [
+        {
+          "step": 1,
+          "skill": "Python",
+          "slug": "python",
+          "category": "language",
+          "status": "learned",
+          "startedAt": "2025-09-05",
+          "gapDaysFromPrevious": null
+        },
+        {
+          "step": 2,
+          "skill": "HTML & CSS",
+          "slug": "html-css",
+          "category": "language",
+          "status": "learned",
+          "startedAt": "2025-12-04",
+          "gapDaysFromPrevious": 90
+        },
+        {
+          "step": 3,
+          "skill": "JavaScript",
+          "slug": "javascript",
+          "category": "language",
+          "status": "learned",
+          "startedAt": "2026-01-03",
+          "gapDaysFromPrevious": 30
+        },
+        {
+          "step": 4,
+          "skill": "SQL",
+          "slug": "sql",
+          "category": "language",
+          "status": "learned",
+          "startedAt": "2026-02-22",
+          "gapDaysFromPrevious": 50
+        },
+        {
+          "step": 5,
+          "skill": "Node.js",
+          "slug": "nodejs",
+          "category": "framework",
+          "status": "learned",
+          "startedAt": "2026-05-03",
+          "gapDaysFromPrevious": 70
+        },
+        {
+          "step": 6,
+          "skill": "React",
+          "slug": "react",
+          "category": "framework",
+          "status": "learning",
+          "startedAt": "2026-06-02",
+          "gapDaysFromPrevious": 30
+        },
+        {
+          "step": 7,
+          "skill": "TypeScript",
+          "slug": "typescript",
+          "category": "language",
+          "status": "learning",
+          "startedAt": "2026-07-22",
+          "gapDaysFromPrevious": 50
+        },
+        {
+          "step": 8,
+          "skill": "PostgreSQL",
+          "slug": "postgresql",
+          "category": "database",
+          "status": "learning",
+          "startedAt": "2026-08-31",
+          "gapDaysFromPrevious": 40
+        },
+        {
+          "step": 9,
+          "skill": "Express",
+          "slug": "express",
+          "category": "framework",
+          "status": "learning",
+          "startedAt": "2026-09-20",
+          "gapDaysFromPrevious": 20
+        }
+      ],
+      "summary": "Python → HTML & CSS → JavaScript → SQL → Node.js → React → TypeScript → PostgreSQL → Express"
+    },
+    "mastery": [
+      {
+        "skill": "Python",
+        "slug": "python",
+        "category": "language",
+        "status": "learned",
+        "proficiency": 4,
+        "score": 74,
+        "breakdown": {
+          "selfRated": 32,
+          "evidence": 21,
+          "practiceTime": 20,
+          "recency": 1
+        },
+        "contributionsUsingSkill": 4,
+        "startedAt": "2025-09-05",
+        "learnedAt": "2026-01-03",
+        "daysToLearn": 120
+      },
+      {
+        "skill": "JavaScript",
+        "slug": "javascript",
+        "category": "language",
+        "status": "learned",
+        "proficiency": 4,
+        "score": 70,
+        "breakdown": {
+          "selfRated": 32,
+          "evidence": 16,
+          "practiceTime": 20,
+          "recency": 2
+        },
+        "contributionsUsingSkill": 2,
+        "startedAt": "2026-01-03",
+        "learnedAt": "2026-04-23",
+        "daysToLearn": 110
+      },
+      {
+        "skill": "Node.js",
+        "slug": "nodejs",
+        "category": "framework",
+        "status": "learned",
+        "proficiency": 3,
+        "score": 64,
+        "breakdown": {
+          "selfRated": 24,
+          "evidence": 19,
+          "practiceTime": 12,
+          "recency": 9
+        },
+        "contributionsUsingSkill": 3,
+        "startedAt": "2026-05-03",
+        "learnedAt": "2026-08-01",
+        "daysToLearn": 90
+      },
+      {
+        "skill": "HTML & CSS",
+        "slug": "html-css",
+        "category": "language",
+        "status": "learned",
+        "proficiency": 3,
+        "score": 61,
+        "breakdown": {
+          "selfRated": 24,
+          "evidence": 16,
+          "practiceTime": 20,
+          "recency": 1
+        },
+        "contributionsUsingSkill": 2,
+        "startedAt": "2025-12-04",
+        "learnedAt": "2026-01-23",
+        "daysToLearn": 50
+      },
+      {
+        "skill": "TypeScript",
+        "slug": "typescript",
+        "category": "language",
+        "status": "learning",
+        "proficiency": 3,
+        "score": 58,
+        "breakdown": {
+          "selfRated": 24,
+          "evidence": 19,
+          "practiceTime": 7,
+          "recency": 8
+        },
+        "contributionsUsingSkill": 3,
+        "startedAt": "2026-07-22",
+        "learnedAt": null,
+        "daysToLearn": null
+      },
+      {
+        "skill": "SQL",
+        "slug": "sql",
+        "category": "language",
+        "status": "learned",
+        "proficiency": 3,
+        "score": 56,
+        "breakdown": {
+          "selfRated": 24,
+          "evidence": 12,
+          "practiceTime": 17,
+          "recency": 3
+        },
+        "contributionsUsingSkill": 1,
+        "startedAt": "2026-02-22",
+        "learnedAt": "2026-05-13",
+        "daysToLearn": 80
+      },
+      {
+        "skill": "Git",
+        "slug": "git",
+        "category": "tool",
+        "status": "learned",
+        "proficiency": 3,
+        "score": 52,
+        "breakdown": {
+          "selfRated": 24,
+          "evidence": 7,
+          "practiceTime": 20,
+          "recency": 1
+        },
+        "contributionsUsingSkill": 1,
+        "startedAt": "2025-10-15",
+        "learnedAt": "2025-12-04",
+        "daysToLearn": 50
+      },
+      {
+        "skill": "React",
+        "slug": "react",
+        "category": "framework",
+        "status": "learning",
+        "proficiency": 3,
+        "score": 49,
+        "breakdown": {
+          "selfRated": 24,
+          "evidence": 7,
+          "practiceTime": 10,
+          "recency": 8
+        },
+        "contributionsUsingSkill": 1,
+        "startedAt": "2026-06-02",
+        "learnedAt": null,
+        "daysToLearn": null
+      },
+      {
+        "skill": "PostgreSQL",
+        "slug": "postgresql",
+        "category": "database",
+        "status": "learning",
+        "proficiency": 2,
+        "score": 36,
+        "breakdown": {
+          "selfRated": 16,
+          "evidence": 7,
+          "practiceTime": 4,
+          "recency": 9
+        },
+        "contributionsUsingSkill": 1,
+        "startedAt": "2026-08-31",
+        "learnedAt": null,
+        "daysToLearn": null
+      },
+      {
+        "skill": "Express",
+        "slug": "express",
+        "category": "framework",
+        "status": "learning",
+        "proficiency": 2,
+        "score": 35,
+        "breakdown": {
+          "selfRated": 16,
+          "evidence": 7,
+          "practiceTime": 3,
+          "recency": 9
+        },
+        "contributionsUsingSkill": 1,
+        "startedAt": "2026-09-20",
+        "learnedAt": null,
+        "daysToLearn": null
+      }
+    ],
+    "monthly": [
+      {
+        "month": "2025-09",
+        "contributions": 0,
+        "byKind": {},
+        "skillsStarted": [
+          "Python"
+        ],
+        "skillsLearned": [],
+        "skillsKnownCumulative": 1,
+        "skillsLearnedCumulative": 0,
+        "xpGained": 0,
+        "xpCumulative": 0
+      },
+      {
+        "month": "2025-10",
+        "contributions": 0,
+        "byKind": {},
+        "skillsStarted": [
+          "Git"
+        ],
+        "skillsLearned": [],
+        "skillsKnownCumulative": 2,
+        "skillsLearnedCumulative": 0,
+        "xpGained": 0,
+        "xpCumulative": 0
+      },
+      {
+        "month": "2025-11",
+        "contributions": 0,
+        "byKind": {},
+        "skillsStarted": [],
+        "skillsLearned": [],
+        "skillsKnownCumulative": 2,
+        "skillsLearnedCumulative": 0,
+        "xpGained": 0,
+        "xpCumulative": 0
+      },
+      {
+        "month": "2025-12",
+        "contributions": 1,
+        "byKind": {
+          "issue": 1
+        },
+        "skillsStarted": [
+          "HTML & CSS"
+        ],
+        "skillsLearned": [
+          "Git"
+        ],
+        "skillsKnownCumulative": 3,
+        "skillsLearnedCumulative": 1,
+        "xpGained": 65,
+        "xpCumulative": 65
+      },
+      {
+        "month": "2026-01",
+        "contributions": 1,
+        "byKind": {
+          "docs": 1
+        },
+        "skillsStarted": [
+          "JavaScript"
+        ],
+        "skillsLearned": [
+          "Python",
+          "HTML & CSS"
+        ],
+        "skillsKnownCumulative": 4,
+        "skillsLearnedCumulative": 3,
+        "xpGained": 125,
+        "xpCumulative": 190
+      },
+      {
+        "month": "2026-02",
+        "contributions": 2,
+        "byKind": {
+          "pull_request": 1,
+          "commit": 1
+        },
+        "skillsStarted": [
+          "SQL"
+        ],
+        "skillsLearned": [],
+        "skillsKnownCumulative": 5,
+        "skillsLearnedCumulative": 3,
+        "xpGained": 65,
+        "xpCumulative": 255
+      },
+      {
+        "month": "2026-03",
+        "contributions": 1,
+        "byKind": {
+          "pull_request": 1
+        },
+        "skillsStarted": [],
+        "skillsLearned": [],
+        "skillsKnownCumulative": 5,
+        "skillsLearnedCumulative": 3,
+        "xpGained": 60,
+        "xpCumulative": 315
+      },
+      {
+        "month": "2026-04",
+        "contributions": 1,
+        "byKind": {
+          "review": 1
+        },
+        "skillsStarted": [],
+        "skillsLearned": [
+          "JavaScript"
+        ],
+        "skillsKnownCumulative": 5,
+        "skillsLearnedCumulative": 4,
+        "xpGained": 70,
+        "xpCumulative": 385
+      },
+      {
+        "month": "2026-05",
+        "contributions": 1,
+        "byKind": {
+          "pull_request": 1
+        },
+        "skillsStarted": [
+          "Node.js"
+        ],
+        "skillsLearned": [
+          "SQL"
+        ],
+        "skillsKnownCumulative": 6,
+        "skillsLearnedCumulative": 5,
+        "xpGained": 66,
+        "xpCumulative": 451
+      },
+      {
+        "month": "2026-06",
+        "contributions": 1,
+        "byKind": {
+          "pull_request": 1
+        },
+        "skillsStarted": [
+          "React"
+        ],
+        "skillsLearned": [],
+        "skillsKnownCumulative": 7,
+        "skillsLearnedCumulative": 5,
+        "xpGained": 60,
+        "xpCumulative": 511
+      },
+      {
+        "month": "2026-07",
+        "contributions": 2,
+        "byKind": {
+          "docs": 1,
+          "pull_request": 1
+        },
+        "skillsStarted": [
+          "TypeScript"
+        ],
+        "skillsLearned": [],
+        "skillsKnownCumulative": 8,
+        "skillsLearnedCumulative": 5,
+        "xpGained": 85,
+        "xpCumulative": 596
+      },
+      {
+        "month": "2026-08",
+        "contributions": 1,
+        "byKind": {
+          "issue": 1
+        },
+        "skillsStarted": [
+          "PostgreSQL"
+        ],
+        "skillsLearned": [
+          "Node.js"
+        ],
+        "skillsKnownCumulative": 9,
+        "skillsLearnedCumulative": 6,
+        "xpGained": 65,
+        "xpCumulative": 661
+      },
+      {
+        "month": "2026-09",
+        "contributions": 1,
+        "byKind": {
+          "pull_request": 1
+        },
+        "skillsStarted": [
+          "Express"
+        ],
+        "skillsLearned": [],
+        "skillsKnownCumulative": 10,
+        "skillsLearnedCumulative": 6,
+        "xpGained": 60,
+        "xpCumulative": 721
+      },
+      {
+        "month": "2026-10",
+        "contributions": 3,
+        "byKind": {
+          "pull_request": 2,
+          "review": 1
+        },
+        "skillsStarted": [],
+        "skillsLearned": [],
+        "skillsKnownCumulative": 10,
+        "skillsLearnedCumulative": 6,
+        "xpGained": 68,
+        "xpCumulative": 789
+      }
+    ],
+    "heatmap": [
+      {
+        "date": "2025-12-14",
+        "count": 1
+      },
+      {
+        "date": "2026-01-03",
+        "count": 1
+      },
+      {
+        "date": "2026-02-02",
+        "count": 1
+      },
+      {
+        "date": "2026-02-12",
+        "count": 1
+      },
+      {
+        "date": "2026-03-24",
+        "count": 1
+      },
+      {
+        "date": "2026-04-13",
+        "count": 1
+      },
+      {
+        "date": "2026-05-03",
+        "count": 1
+      },
+      {
+        "date": "2026-06-02",
+        "count": 1
+      },
+      {
+        "date": "2026-07-02",
+        "count": 1
+      },
+      {
+        "date": "2026-07-27",
+        "count": 1
+      },
+      {
+        "date": "2026-08-21",
+        "count": 1
+      },
+      {
+        "date": "2026-09-15",
+        "count": 1
+      },
+      {
+        "date": "2026-10-10",
+        "count": 1
+      },
+      {
+        "date": "2026-10-18",
+        "count": 1
+      },
+      {
+        "date": "2026-10-25",
+        "count": 1
+      }
+    ],
+    "journey": [
+      {
+        "date": "2025-09-05T00:00:00.000Z",
+        "type": "start",
+        "title": "Started coding",
+        "detail": null
+      },
+      {
+        "date": "2025-09-05T00:00:00.000Z",
+        "type": "first_skill",
+        "title": "First skill: Python",
+        "detail": null
+      },
+      {
+        "date": "2025-09-25T21:31:57.815Z",
+        "type": "joined",
+        "title": "Joined the platform",
+        "detail": null
+      },
+      {
+        "date": "2025-12-04T00:00:00.000Z",
+        "type": "skill_learned",
+        "title": "Learned Git",
+        "detail": "50 days after starting"
+      },
+      {
+        "date": "2025-12-04T00:00:00.000Z",
+        "type": "level_up",
+        "title": "Reached level 2: Tinkerer",
+        "detail": null
+      },
+      {
+        "date": "2025-12-14T21:31:57.836Z",
+        "type": "first_contribution",
+        "title": "First contribution",
+        "detail": "Reported typo in installation guide"
+      },
+      {
+        "date": "2025-12-14T21:31:57.836Z",
+        "type": "repositories",
+        "title": "First repository: example-org/py-utils",
+        "detail": "example-org/py-utils"
+      },
+      {
+        "date": "2026-01-03T00:00:00.000Z",
+        "type": "skill_learned",
+        "title": "Learned Python",
+        "detail": "120 days after starting"
+      },
+      {
+        "date": "2026-01-03T00:00:00.000Z",
+        "type": "polyglot",
+        "title": "Became a polyglot",
+        "detail": "3rd language: JavaScript"
+      },
+      {
+        "date": "2026-01-23T00:00:00.000Z",
+        "type": "skill_learned",
+        "title": "Learned HTML & CSS",
+        "detail": "50 days after starting"
+      },
+      {
+        "date": "2026-01-23T00:00:00.000Z",
+        "type": "level_up",
+        "title": "Reached level 3: First-timer",
+        "detail": null
+      },
+      {
+        "date": "2026-02-02T21:31:57.838Z",
+        "type": "first_pr",
+        "title": "Opened first pull request",
+        "detail": "Add type hints to helpers module"
+      },
+      {
+        "date": "2026-02-02T21:31:57.838Z",
+        "type": "first_merge",
+        "title": "First pull request merged!",
+        "detail": "Add type hints to helpers module"
+      },
+      {
+        "date": "2026-03-24T21:31:57.839Z",
+        "type": "contribution_count",
+        "title": "5 contributions",
+        "detail": null
+      },
+      {
+        "date": "2026-03-24T21:31:57.839Z",
+        "type": "repositories",
+        "title": "Contributed to 3 repositories",
+        "detail": "example-org/web-starter"
+      },
+      {
+        "date": "2026-04-23T00:00:00.000Z",
+        "type": "skill_learned",
+        "title": "Learned JavaScript",
+        "detail": "110 days after starting"
+      },
+      {
+        "date": "2026-05-03T21:31:57.840Z",
+        "type": "level_up",
+        "title": "Reached level 4: Contributor",
+        "detail": null
+      },
+      {
+        "date": "2026-05-13T00:00:00.000Z",
+        "type": "skill_learned",
+        "title": "Learned SQL",
+        "detail": "80 days after starting"
+      },
+      {
+        "date": "2026-07-02T21:31:57.842Z",
+        "type": "repositories",
+        "title": "Contributed to 5 repositories",
+        "detail": "example-org/api-kit"
+      },
+      {
+        "date": "2026-07-27T21:31:57.842Z",
+        "type": "contribution_count",
+        "title": "10 contributions",
+        "detail": null
+      },
+      {
+        "date": "2026-08-01T00:00:00.000Z",
+        "type": "skill_learned",
+        "title": "Learned Node.js",
+        "detail": "90 days after starting"
+      },
+      {
+        "date": "2026-09-15T21:31:57.843Z",
+        "type": "level_up",
+        "title": "Reached level 5: Builder",
+        "detail": null
+      }
+    ],
+    "badges": [
+      {
+        "id": "first-steps",
+        "name": "First Steps",
+        "description": "Added your first skill",
+        "earned": true
+      },
+      {
+        "id": "first-contribution",
+        "name": "Hello, Open Source",
+        "description": "Logged your first contribution",
+        "earned": true
+      },
+      {
+        "id": "first-pr",
+        "name": "Pull Request Pioneer",
+        "description": "Opened a pull request",
+        "earned": true
+      },
+      {
+        "id": "merged",
+        "name": "Merged!",
+        "description": "Got a pull request merged",
+        "earned": true
+      },
+      {
+        "id": "polyglot",
+        "name": "Polyglot",
+        "description": "Working with 3+ languages",
+        "earned": true
+      },
+      {
+        "id": "full-stack",
+        "name": "Full-Stack Path",
+        "description": "Frontend + backend + database skills",
+        "earned": true
+      },
+      {
+        "id": "reviewer",
+        "name": "Second Pair of Eyes",
+        "description": "Reviewed someone else’s code",
+        "earned": true
+      },
+      {
+        "id": "streak-4",
+        "name": "On a Roll",
+        "description": "4-week activity streak",
+        "earned": true
+      },
+      {
+        "id": "multi-repo",
+        "name": "Explorer",
+        "description": "Contributed to 3+ repositories",
+        "earned": true
+      },
+      {
+        "id": "ten",
+        "name": "Double Digits",
+        "description": "10+ contributions",
+        "earned": true
+      }
+    ],
+    "topRepositories": [
+      {
+        "repo": "example-org/api-kit",
+        "contributions": 6,
+        "merged": 2,
+        "firstAt": "2026-07-02T21:31:57.842Z",
+        "lastAt": "2026-10-25T21:31:57.845Z"
+      },
+      {
+        "repo": "example-org/py-utils",
+        "contributions": 3,
+        "merged": 1,
+        "firstAt": "2025-12-14T21:31:57.836Z",
+        "lastAt": "2026-02-02T21:31:57.838Z"
+      },
+      {
+        "repo": "example-org/web-starter",
+        "contributions": 3,
+        "merged": 1,
+        "firstAt": "2026-03-24T21:31:57.839Z",
+        "lastAt": "2026-05-03T21:31:57.840Z"
+      },
+      {
+        "repo": "demo-student/todo-cli",
+        "contributions": 1,
+        "merged": 0,
+        "firstAt": "2026-02-12T21:31:57.838Z",
+        "lastAt": "2026-02-12T21:31:57.838Z"
+      },
+      {
+        "repo": "example-org/js-dates",
+        "contributions": 1,
+        "merged": 1,
+        "firstAt": "2026-06-02T21:31:57.841Z",
+        "lastAt": "2026-06-02T21:31:57.841Z"
+      },
+      {
+        "repo": "example-org/ui-kit",
+        "contributions": 1,
+        "merged": 0,
+        "firstAt": "2026-10-10T21:31:57.844Z",
+        "lastAt": "2026-10-10T21:31:57.844Z"
+      }
+    ]
+  }
+}

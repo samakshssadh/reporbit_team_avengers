@@ -57,7 +57,7 @@ Reporbit finds real open-source repositories that match your skills (GitHub, Git
 
 **If Gemma is unreachable, Reporbit says so.** It never shows a canned "AI" answer.
 
-- **Model:** Google **Gemma 3** (e.g. `gemma3:4b` via Ollama, or `gemma-3-27b-it` via Google AI Studio). The exact ID is shown in `/api/health` and on every AI response.
+- **Model:** Google **Gemma 3** (e.g. `gemma3:4b` via Ollama, or `gemma-4-26b-a4b-it` / `gemma-3-27b-it` via Google AI Studio, depending on what your key can access). The exact ID is shown in `/api/health` and on every AI response.
 - **Model license:** [Gemma Terms of Use](https://ai.google.dev/gemma/terms). The code's MIT license does **not** relicense the model.
 
 ---
@@ -71,18 +71,20 @@ Every stage of the hack night is kept, so you can see how Reporbit evolved:
 | [`v0/`](v0) | MVP | *Repo Match*: first prototype (Node + matching + AI helper) |
 | [`v1/`](v1) | Orbit 1 | Node + PostgreSQL backend, Orbit React UI, GitHub discovery, Gemma roadmap & mentor |
 | [`v2/`](v2) | Reporbit 2 | Landing page, email/password accounts, onboarding, liquid-glass UI, Dummy PR, casual Orbit AI |
-| [`v3/`](v3) | **Reporbit 3 (current)** | GitHub + GitLab + Bitbucket, ring constellation, profile page with heatmap & growth, caching for faster loads |
+| [`v3/`](v3) | Reporbit 3 | GitHub + GitLab + Bitbucket, ring constellation, profile page with heatmap & growth, caching for faster loads |
+| [`v4/`](v4) | Reporbit 4 | Dummy PR accepts project .zip uploads (no 500-line limit), Gemma 4 support |
+| [`v5/`](v5) | **Reporbit 5 (current)** | Light/Dark theme, Connect GitHub (verified contributions), Learn → tech stack, badge guide, instant GitHub repo search, personalised AI roadmaps, Connect-to-Orbit-AI, deletable chats, boot animation |
 
-`render.yaml` deploys **v3**.
+`render.yaml` deploys **v5**.
 
 ---
 
-## 🚀 Run v3 locally
+## 🚀 Run v5 locally
 
 Requirements: **Node 20+**, **PostgreSQL 13+**, and Gemma via **Ollama** or a **Google AI Studio** key.
 
 ```bash
-cd v3/backend
+cd v5/backend
 cp .env.example .env      # set DATABASE_URL, Gemma settings, GITHUB_TOKEN (never commit .env)
 npm install
 npm run build:frontend    # compiles the React UI into backend/public
@@ -94,11 +96,11 @@ npm start                 # → http://localhost:4000
 | Gemma option | `.env` |
 |---|---|
 | Local (Ollama) | `GEMMA_PROVIDER=ollama` · `GEMMA_MODEL=gemma3:4b` (run `ollama pull gemma3:4b`) |
-| Hosted (AI Studio) | `GEMMA_PROVIDER=google` · `GEMMA_MODEL=gemma-3-27b-it` · `GOOGLE_API_KEY=…` |
+| Hosted (AI Studio) | `GEMMA_PROVIDER=google` · `GEMMA_MODEL=gemma-4-26b-a4b-it` · `GOOGLE_API_KEY=…` |
 
 Check that everything is up: `curl localhost:4000/api/health` should show `"database":"ready"` and `"gemma":"ready"`.
 
-**Deploy:** Render → *New → Blueprint* → this repo. `render.yaml` builds the frontend and starts the backend from `v3/backend`.
+**Deploy:** Render → *New → Blueprint* → this repo. `render.yaml` builds the frontend and starts the backend from `v5/backend`.
 
 ---
 
