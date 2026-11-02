@@ -260,3 +260,78 @@ html, body { overflow-x: hidden; }
 /* light: neutralise charcoal surfaces */
 html.light .bg-space-900, html.light .bg-space-900\/80 { background-color: rgba(255,255,255,.72) !important; }
 html.light .bg-space-950\/50, html.light .bg-space-950\/60, html.light .bg-space-950\/70 { background-color: rgba(255,250,245,.6) !important; }
+
+/* ================= Light theme v2 — "sunset sand": warm layered tones, high contrast ================= */
+html.light {
+  --background: 32 60% 94%; --foreground: 232 18% 12%;
+  --muted-foreground: 25 14% 34%; --border: 28 35% 80%; --card: 36 100% 98%;
+}
+html.light body { background: #f4eadf; color: #17181f; }
+html.light .ambient {
+  background:
+    radial-gradient(900px 520px at 0% -8%, rgba(255,170,90,0.42), transparent 62%),
+    radial-gradient(800px 560px at 100% 4%, rgba(255,140,170,0.30), transparent 60%),
+    radial-gradient(900px 700px at 70% 110%, rgba(170,150,255,0.22), transparent 60%),
+    radial-gradient(700px 500px at 10% 100%, rgba(255,214,150,0.35), transparent 60%),
+    linear-gradient(180deg, #fbf3ea 0%, #f3e5d6 100%) !important;
+}
+html.light .ambient .blob { opacity: .35 !important; mix-blend-mode: multiply; }
+html.light .glass {
+  background: linear-gradient(140deg, rgba(255,252,247,0.9), rgba(255,244,232,0.78)) !important;
+  border-color: rgba(110,60,15,0.14) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 1px 2px rgba(80,40,0,.06), 0 14px 40px -18px rgba(120,55,0,0.30) !important;
+}
+html.light .glass-strong {
+  background: linear-gradient(150deg, #fffcf8 0%, #fff4e8 100%) !important;
+  border-color: rgba(110,60,15,0.16) !important;
+  box-shadow: inset 0 1px 0 #fff, 0 30px 80px -24px rgba(120,55,0,0.35) !important;
+}
+html.light .liquid-pill { background: linear-gradient(180deg, rgba(255,251,245,.94), rgba(255,240,224,.86)) !important; border-color: rgba(110,60,15,.14) !important; }
+html.light .liquid-lens { background: linear-gradient(180deg, #ffe2c2, #ffd2a6) !important; border-color: rgba(214,100,0,.45) !important; }
+html.light .bg-space-900, html.light .bg-space-900\/80, html.light .bg-space-800 { background-color: #fffaf3 !important; }
+html.light .bg-space-950\/50, html.light .bg-space-950\/60, html.light .bg-space-950\/70 { background-color: rgba(250,236,220,.75) !important; }
+html.light .bg-neutral-50, html.light .bg-neutral-50\/50 { background-color: #fbefe2 !important; }
+html.light .bg-neutral-100, html.light .bg-neutral-100\/80, html.light .bg-neutral-100\/70 { background-color: #f5e3cf !important; }
+html.light .bg-neutral-200, html.light .bg-neutral-200\/80 { background-color: #ecd5bb !important; }
+html.light .text-muted-foreground { color: #5a4d42 !important; }
+html.light .text-neutral-600, html.light .text-neutral-500 { color: #4f4339 !important; }
+html.light .text-neutral-400 { color: #7a6b5d !important; }
+/* accents need to be darker on light surfaces */
+html.light .text-tangerine-100, html.light .text-tangerine-200, html.light .text-tangerine-300, html.light .text-tangerine-400,
+html.light .text-indigo-300, html.light .text-indigo-400, html.light .text-tangerine-300\/90 { color: #b04d00 !important; }
+html.light .text-emerald-100, html.light .text-emerald-200, html.light .text-emerald-300, html.light .text-emerald-400 { color: #046c4e !important; }
+html.light .text-rose-100, html.light .text-rose-200, html.light .text-rose-300, html.light .text-rose-400 { color: #b0123f !important; }
+html.light .bg-emerald-500\/20 { background-color: rgba(16,185,129,.16) !important; }
+html.light .bg-tangerine-500\/15, html.light .bg-tangerine-500\/20, html.light .bg-tangerine-500\/25 { background-color: rgba(254,133,0,.16) !important; }
+html.light .text-gradient { background-image: linear-gradient(100deg, #c45200 0%, #fe6a00 35%, #e0245e 70%, #c45200 100%); }
+/* white text on solid accent fills stays white */
+html.light .bg-indigo-600.text-white, html.light .bg-tangerine-500.text-white, html.light .bg-tangerine-600.text-white,
+html.light .bg-rose-500.text-white, html.light .bg-emerald-600.text-white, html.light [class*="from-tangerine"].text-white { color: #fff !important; }
+html.light .bg-neutral-950 { background-color: #22242f !important; }
+html.light .bg-neutral-950, html.light .bg-neutral-950 * { color: #f3ead8 !important; }
+/* constellation */
+html.light .react-flow__edge.edge-dim .react-flow__edge-path { stroke: rgba(150,72,10,0.38) !important; stroke-width: 1.2px !important; }
+html.light .react-flow__edge.edge-hot .react-flow__edge-path { stroke: rgba(214,92,0,0.95) !important; stroke-width: 2px !important; }
+html.light .rf-star-core { box-shadow: 0 0 0 1.5px rgba(150,60,0,.55), 0 4px 14px -2px rgba(200,80,0,.55) !important; }
+html.light .rf-star-glow { opacity: .55 !important; mix-blend-mode: multiply; }
+html.light .rf-star-label { color: #1d1a17 !important; font-weight: 600; text-shadow: 0 1px 0 rgba(255,250,242,.9), 0 0 6px rgba(255,248,238,.95); }
+html.light .rf-star-score { color: #a54600 !important; font-weight: 600; }
+/* splash + landing helpers */
+.splash { background: #16171f; }
+.splash-ink { color: #fff; } .splash-muted { color: rgba(255,255,255,.55); }
+html.light .splash { background: #f6ebdf; }
+html.light .splash-ink { color: #17181f; } html.light .splash-muted { color: #6b5a4b; }
+.marquee-mask { -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+html.light .orbit-planet, html.light .splash-planet { background: #fe8500 !important; }
+.auth-card::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: conic-gradient(from var(--a, 0deg), transparent 0 70%, rgba(254,133,0,.9) 80%, rgba(255,59,102,.8) 88%, transparent 96%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: spin-a 5s linear infinite; }
+@property --a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@keyframes spin-a { to { --a: 360deg; } }
+@media (prefers-reduced-motion: reduce) { .auth-card::before { animation: none; } }
+/* light: any pale accent text (incl. /opacity variants) becomes a deep, readable tone */
+html.light [class*="text-tangerine-50"], html.light [class*="text-tangerine-100"], html.light [class*="text-tangerine-200"], html.light [class*="text-tangerine-300"], html.light [class*="text-tangerine-400"],
+html.light [class*="text-indigo-200"], html.light [class*="text-indigo-300"], html.light [class*="text-indigo-400"], html.light [class*="text-violet-300"], html.light [class*="text-amber-200"], html.light [class*="text-amber-300"] { color: #a84a00 !important; }
+html.light [class*="text-emerald-100"], html.light [class*="text-emerald-200"], html.light [class*="text-emerald-300"] { color: #046c4e !important; }
+html.light [class*="text-rose-100"], html.light [class*="text-rose-200"], html.light [class*="text-rose-300"] { color: #b0123f !important; }
+html.light [class*="text-sky-200"], html.light [class*="text-sky-300"] { color: #075985 !important; }

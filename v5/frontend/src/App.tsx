@@ -69,11 +69,16 @@ const MainContent: React.FC = () => {
   const { activeTab } = useApp();
   return (
     <main className="flex-1 relative">
-      {activeTab === "repositories" && <RepositoriesPage />}
-      {activeTab === "learn" && <LearnPage />}
-      {activeTab === "chat" && <OrbitAIChat />}
-      {activeTab === "pr" && <DummyPRPage />}
-      {activeTab === "profile" && <ProfilePage />}
+      <AnimatePresence mode="wait">
+        <motion.div key={activeTab} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}>
+          {activeTab === "repositories" && <RepositoriesPage />}
+          {activeTab === "learn" && <LearnPage />}
+          {activeTab === "chat" && <OrbitAIChat />}
+          {activeTab === "pr" && <DummyPRPage />}
+          {activeTab === "profile" && <ProfilePage />}
+        </motion.div>
+      </AnimatePresence>
     </main>
   );
 };

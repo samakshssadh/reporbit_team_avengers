@@ -40,16 +40,16 @@ export const RepositoryNode = memo((props: any) => {
 
       {/* Star */}
       <div className="relative" style={{ width: size, height: size }}>
-        <span className="absolute -inset-3 rounded-full blur-xl transition-opacity duration-300 group-hover:opacity-100"
+        <span className="rf-star-glow absolute -inset-3 rounded-full blur-xl transition-opacity duration-300 group-hover:opacity-100"
           style={{ background: `radial-gradient(circle, ${c2} 0%, transparent 70%)`, opacity: isSelected ? 1 : glow }} />
         {isSelected && <span className="absolute -inset-2 rounded-full border border-tangerine-300/70 animate-pulse" />}
-        <span className="absolute inset-0 rounded-full transition-transform duration-300 group-hover:scale-110"
+        <span className="rf-star-core absolute inset-0 rounded-full transition-transform duration-300 group-hover:scale-110"
           style={{ background: `radial-gradient(circle at 35% 30%, #fff 0%, ${c1} 38%, ${c2} 75%)`, boxShadow: `0 0 ${size / 2}px ${size / 8}px ${c2}66, inset 0 1px 2px rgba(255,255,255,0.8)` }} />
       </div>
 
       {/* Name under the star (fixed width so labels never collide) */}
-      <span className="mt-1.5 w-[120px] text-center truncate text-[11px] font-medium text-white/80 group-hover:text-white">{repository.name}</span>
-      <span className="text-[10px] font-mono text-tangerine-300/90">{score}%{repository.platform && repository.platform !== "github" && <span className={`ml-1 px-1 rounded ${repository.platform === "gitlab" ? "bg-rose-500/20 text-rose-200" : "bg-sky-500/20 text-sky-200"}`}>{repository.platform === "gitlab" ? "GitLab" : "Bitbucket"}</span>}</span>
+      <span className="rf-star-label mt-1.5 w-[120px] text-center truncate text-[11px] font-medium text-white/80 group-hover:text-white">{repository.name}</span>
+      <span className="rf-star-score text-[10px] font-mono text-tangerine-300/90">{score}%{repository.platform && repository.platform !== "github" && <span className={`ml-1 px-1 rounded ${repository.platform === "gitlab" ? "bg-rose-500/20 text-rose-200" : "bg-sky-500/20 text-sky-200"}`}>{repository.platform === "gitlab" ? "GitLab" : "Bitbucket"}</span>}</span>
 
       {/* Hover preview (same info as before) */}
       <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-3 w-64 p-3 rounded-2xl glass-strong text-[11px] text-white/75 pointer-events-none opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 group-focus:opacity-100 transition-all duration-200 z-50">

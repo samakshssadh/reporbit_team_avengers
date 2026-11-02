@@ -65,7 +65,7 @@ const ConstellationInner: React.FC<ConstellationCanvasProps> = ({
       const parent = ranked.slice(0, idx).find((p) => p.primaryLanguage === repo.primaryLanguage);
       if (!parent) return;
       const hot = selectedRepo && (selectedRepo.id === repo.id || selectedRepo.id === parent.id);
-      edges.push({ id: `e-${parent.id}-${repo.id}`, source: parent.id, target: repo.id, animated: !!hot, type: "straight",
+      edges.push({ id: `e-${parent.id}-${repo.id}`, source: parent.id, target: repo.id, animated: !!hot, type: "straight", className: hot ? "edge-hot" : "edge-dim",
         style: { stroke: hot ? "rgba(254,133,0,0.85)" : "rgba(255,196,140,0.12)", strokeWidth: hot ? 1.5 : 0.8 } });
     });
     return edges;
