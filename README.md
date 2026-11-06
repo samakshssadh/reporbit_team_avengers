@@ -122,3 +122,7 @@ Samaksh · Pratyush · Harsh · Varun
 ## 📄 License
 
 Code: [MIT](LICENSE) · Model: Google Gemma under the [Gemma Terms of Use](https://ai.google.dev/gemma/terms)
+
+
+## Deploy on Vercel (v6)
+Import this repo in Vercel, set **Root Directory = `v6`**, add a Neon Postgres database (sets `DATABASE_URL`) and the env vars `GEMMA_PROVIDER`, `GEMMA_MODEL`, `GOOGLE_API_KEY`, `GITHUB_TOKEN`, `COOKIE_SECURE=true`. Every push to `v6/` redeploys automatically.
