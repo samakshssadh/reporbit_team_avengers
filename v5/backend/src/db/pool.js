@@ -8,7 +8,7 @@ pg.types.setTypeParser(20, (v) => Number(v));
 
 export const pool = new pg.Pool({
   connectionString: config.databaseUrl,
-  max: process.env.VERCEL ? 3 : 10,
+  max: 10,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000,
 });
