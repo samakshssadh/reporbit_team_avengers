@@ -1,0 +1,12 @@
+{
+  "user": {
+    "id": "94fe31d8-4b9a-459d-ab00-219448e9af3e",
+    "email": "demo@devpath.dev",
+    "displayName": "Demo Student",
+    "handle": "demo-student",
+    "githubLogin": null,
+    "avatarUrl": null,
+    "createdAt": "2025-09-25T21:31:57.815Z"
+  },
+  "csrfToken": "BjbhH1CAj-V58kXt6zxlPknl3jBJeVNy"
+}

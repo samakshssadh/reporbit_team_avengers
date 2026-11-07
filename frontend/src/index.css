@@ -1,0 +1,344 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 98%;
+    --foreground: 240 10% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 10%;
+    --primary: 243 75% 59%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 6% 10%;
+    --muted: 240 5% 94%;
+    --muted-foreground: 240 4% 46%;
+    --accent: 240 5% 96%;
+    --accent-foreground: 240 6% 10%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 243 75% 59%;
+    --radius: 0.75rem;
+  }
+
+  /* Reporbit dark theme: charcoal #21232e base, tangerine #fe8500 accents */
+  .dark {
+    --background: 231 16% 12%;
+    --foreground: 30 20% 97%;
+    --card: 231 16% 15%;
+    --card-foreground: 30 20% 97%;
+    --popover: 231 16% 15%;
+    --popover-foreground: 30 20% 97%;
+    --primary: 31 100% 50%;
+    --primary-foreground: 231 16% 12%;
+    --secondary: 231 14% 20%;
+    --secondary-foreground: 30 20% 97%;
+    --muted: 231 14% 20%;
+    --muted-foreground: 228 12% 68%;
+    --accent: 231 14% 22%;
+    --accent-foreground: 30 20% 97%;
+    --destructive: 350 80% 55%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 231 14% 24%;
+    --input: 231 14% 24%;
+    --ring: 31 100% 50%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* React Flow Constellation canvas styling */
+.react-flow__renderer {
+  background: transparent !important;
+}
+
+.react-flow__pane {
+  cursor: grab;
+}
+
+.react-flow__pane:active {
+  cursor: grabbing;
+}
+
+.react-flow__controls {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3) !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: rgba(33, 35, 46, 0.7) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+.react-flow__controls-button {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #94a3b8 !important;
+  fill: #94a3b8 !important;
+}
+
+.react-flow__controls-button:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  fill: #ffffff !important;
+}
+
+/* Apple-style smooth scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(150, 150, 150, 0.3);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(150, 150, 150, 0.5);
+}
+
+/* ================= Reporbit liquid glass ================= */
+html.dark body { background: #16171f; }
+
+.glass {
+  background: linear-gradient(135deg, rgba(255,255,255,0.09), rgba(255,255,255,0.03));
+  backdrop-filter: blur(22px) saturate(170%);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(255,255,255,0.03), 0 10px 40px -12px rgba(0,0,0,0.55);
+}
+.glass-strong {
+  background: linear-gradient(135deg, rgba(43,46,61,0.82), rgba(33,35,46,0.72));
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), 0 30px 80px -20px rgba(0,0,0,0.7);
+}
+/* Liquid glass pill (nav) with a warm refraction edge */
+.liquid-pill {
+  position: relative;
+  background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+  backdrop-filter: blur(26px) saturate(190%);
+  -webkit-backdrop-filter: blur(26px) saturate(190%);
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -8px 20px -12px rgba(254,133,0,0.35), 0 12px 40px -10px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,0,0,0.2);
+}
+.liquid-pill::before {
+  content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: linear-gradient(110deg, transparent 20%, rgba(254,133,0,0.55) 40%, rgba(255,90,120,0.35) 50%, transparent 70%);
+  background-size: 200% 100%; animation: shine 7s linear infinite;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
+}
+.liquid-lens {
+  background: linear-gradient(180deg, rgba(254,133,0,0.28), rgba(254,133,0,0.12));
+  border: 1px solid rgba(255,180,100,0.35);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 6px 20px -6px rgba(254,133,0,0.6);
+}
+.btn-tangerine {
+  background: linear-gradient(135deg, #ffa53d 0%, #fe8500 45%, #ff5a3c 100%);
+  color: #1b1d27; font-weight: 600;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 10px 30px -8px rgba(254,133,0,0.65);
+  transition: transform .15s ease, box-shadow .2s ease, filter .2s ease;
+}
+.btn-tangerine:hover { transform: translateY(-1px); filter: brightness(1.06); box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 16px 40px -8px rgba(254,133,0,0.8); }
+.btn-tangerine:disabled { opacity: .55; transform: none; cursor: not-allowed; }
+.text-gradient {
+  background: linear-gradient(100deg, #ffd29e 0%, #fe8500 35%, #ff5a7a 70%, #ffb15c 100%);
+  background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shine 8s linear infinite;
+}
+.ambient { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; background: radial-gradient(1200px 600px at 10% -10%, rgba(254,133,0,0.16), transparent 60%), radial-gradient(900px 600px at 110% 10%, rgba(255,60,110,0.12), transparent 60%), #16171f; }
+.ambient .blob { position: absolute; border-radius: 9999px; filter: blur(90px); opacity: .55; animation: blob 22s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .ambient .blob, .liquid-pill::before, .text-gradient { animation: none !important; }
+}
+.react-flow__controls { background: rgba(33,35,46,0.6) !important; }
+.react-flow__edge-path { transition: stroke .2s ease; }
+
+/* ================= Dark mode: richer & deeper ================= */
+html.dark .ambient {
+  background:
+    radial-gradient(1100px 620px at 8% -12%, rgba(254,133,0,0.20), transparent 60%),
+    radial-gradient(900px 600px at 108% 8%, rgba(255,59,102,0.14), transparent 60%),
+    radial-gradient(800px 700px at 50% 120%, rgba(124,92,255,0.14), transparent 60%),
+    linear-gradient(180deg, #13141b 0%, #171822 50%, #12131a 100%);
+}
+/* faint starfield */
+.ambient::after {
+  content: ""; position: absolute; inset: 0; opacity: .5; pointer-events: none;
+  background-image:
+    radial-gradient(1px 1px at 12% 22%, rgba(255,255,255,.55), transparent 60%),
+    radial-gradient(1px 1px at 72% 14%, rgba(255,214,170,.6), transparent 60%),
+    radial-gradient(1.5px 1.5px at 38% 68%, rgba(255,255,255,.45), transparent 60%),
+    radial-gradient(1px 1px at 88% 58%, rgba(255,170,200,.5), transparent 60%),
+    radial-gradient(1px 1px at 22% 88%, rgba(255,255,255,.4), transparent 60%),
+    radial-gradient(1.2px 1.2px at 58% 38%, rgba(190,170,255,.5), transparent 60%);
+  background-size: 620px 620px;
+  animation: drift 120s linear infinite;
+}
+@keyframes drift { from { background-position: 0 0; } to { background-position: 620px 310px; } }
+
+/* ================= Light mode ================= */
+html.light { color-scheme: light; }
+html.light body { background: #fbf6f0; color: #1b1d27; }
+html.light .ambient {
+  background:
+    radial-gradient(1100px 600px at 6% -10%, rgba(254,133,0,0.22), transparent 60%),
+    radial-gradient(900px 600px at 105% 6%, rgba(255,90,140,0.16), transparent 60%),
+    radial-gradient(800px 700px at 50% 120%, rgba(140,110,255,0.12), transparent 60%),
+    #fbf6f0;
+}
+html.light .ambient .blob { opacity: .28 !important; }
+html.light .ambient::after { opacity: 0; }
+html.light .glass {
+  background: linear-gradient(135deg, rgba(255,255,255,0.78), rgba(255,255,255,0.52));
+  border-color: rgba(27,29,39,0.08);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 10px 40px -16px rgba(80,40,0,0.22);
+}
+html.light .glass-strong {
+  background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(255,250,245,0.82));
+  border-color: rgba(27,29,39,0.08);
+  box-shadow: inset 0 1px 0 #fff, 0 30px 80px -24px rgba(80,40,0,0.28);
+}
+html.light .liquid-pill {
+  background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.55));
+  border-color: rgba(27,29,39,0.08);
+  box-shadow: inset 0 1px 0 #fff, inset 0 -8px 20px -12px rgba(254,133,0,0.35), 0 12px 40px -14px rgba(80,40,0,0.25);
+}
+html.light .liquid-lens {
+  background: linear-gradient(180deg, rgba(254,133,0,0.20), rgba(254,133,0,0.10));
+  border-color: rgba(254,133,0,0.35);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 6px 18px -8px rgba(254,133,0,0.55);
+}
+html.light .text-tangerine-100, html.light .text-tangerine-200, html.light .text-tangerine-300 { color: #c25e00 !important; }
+html.light .text-rose-100, html.light .text-rose-200, html.light .text-rose-300 { color: #c81145 !important; }
+html.light .text-emerald-100, html.light .text-emerald-200, html.light .text-emerald-300 { color: #047857 !important; }
+html.light .text-sky-200 { color: #0369a1 !important; }
+html.light .text-amber-200 { color: #a16207 !important; }
+html.light .react-flow__edge-path { stroke: rgba(180,90,0,0.25); }
+html.light ::selection { background: rgba(254,133,0,.25); color: #1b1d27; }
+
+/* Theme switch animation */
+html.theme-switching *, html.theme-switching *::before, html.theme-switching *::after { transition: background-color .35s ease, color .35s ease, border-color .35s ease, box-shadow .35s ease !important; }
+
+/* ================= Orbit loader ================= */
+.orbit-loader { position: relative; width: var(--s, 64px); height: var(--s, 64px); }
+.orbit-loader .core { position: absolute; inset: 32%; border-radius: 9999px; background: radial-gradient(circle at 35% 30%, #fff, #ffb15c 35%, #fe8500 65%, #ff3b66); box-shadow: 0 0 30px 6px rgba(254,133,0,.55); animation: pulse-core 1.6s ease-in-out infinite; }
+.orbit-loader .ring { position: absolute; inset: 0; border-radius: 9999px; border: 1px solid rgba(254,133,0,.25); animation: spin var(--d, 2.4s) linear infinite; }
+.orbit-loader .ring::after { content: ""; position: absolute; top: -4px; left: 50%; width: 8px; height: 8px; margin-left: -4px; border-radius: 9999px; background: #fff; box-shadow: 0 0 12px 3px rgba(254,133,0,.9); }
+.orbit-loader .ring.r2 { inset: 14%; --d: 1.6s; animation-direction: reverse; border-color: rgba(255,59,102,.25); }
+.orbit-loader .ring.r2::after { width: 6px; height: 6px; margin-left: -3px; top: -3px; box-shadow: 0 0 10px 3px rgba(255,59,102,.9); }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse-core { 0%,100% { transform: scale(.92); } 50% { transform: scale(1.06); } }
+.typing-dot { width: 7px; height: 7px; border-radius: 9999px; background: linear-gradient(135deg, #ffb15c, #fe8500); animation: typing 1.2s ease-in-out infinite; }
+.typing-dot:nth-child(2) { animation-delay: .15s; } .typing-dot:nth-child(3) { animation-delay: .3s; }
+@keyframes typing { 0%,60%,100% { transform: translateY(0); opacity: .45; } 30% { transform: translateY(-6px); opacity: 1; } }
+.shimmer { background: linear-gradient(90deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.12) 50%, rgba(255,255,255,.04) 100%); background-size: 200% 100%; animation: shine 1.6s linear infinite; }
+html.light .shimmer { background: linear-gradient(90deg, rgba(27,29,39,.05) 0%, rgba(27,29,39,.10) 50%, rgba(27,29,39,.05) 100%); background-size: 200% 100%; }
+@media (prefers-reduced-motion: reduce) { .ambient::after, .orbit-loader *, .typing-dot, .shimmer { animation: none !important; } }
+
+html, body { overflow-x: hidden; }
+.react-flow__pane { cursor: grab !important; }
+.react-flow__pane.dragging { cursor: grabbing !important; }
+.react-flow__node { cursor: pointer; }
+
+/* light: neutralise charcoal surfaces */
+html.light .bg-space-900, html.light .bg-space-900\/80 { background-color: rgba(255,255,255,.72) !important; }
+html.light .bg-space-950\/50, html.light .bg-space-950\/60, html.light .bg-space-950\/70 { background-color: rgba(255,250,245,.6) !important; }
+
+/* ================= Light theme v2 — "sunset sand": warm layered tones, high contrast ================= */
+html.light {
+  --background: 32 60% 94%; --foreground: 232 18% 12%;
+  --muted-foreground: 25 14% 34%; --border: 28 35% 80%; --card: 36 100% 98%;
+}
+html.light body { background: #f4eadf; color: #17181f; }
+html.light .ambient {
+  background:
+    radial-gradient(900px 520px at 0% -8%, rgba(255,170,90,0.42), transparent 62%),
+    radial-gradient(800px 560px at 100% 4%, rgba(255,140,170,0.30), transparent 60%),
+    radial-gradient(900px 700px at 70% 110%, rgba(170,150,255,0.22), transparent 60%),
+    radial-gradient(700px 500px at 10% 100%, rgba(255,214,150,0.35), transparent 60%),
+    linear-gradient(180deg, #fbf3ea 0%, #f3e5d6 100%) !important;
+}
+html.light .ambient .blob { opacity: .35 !important; }
+html.light .glass {
+  background: linear-gradient(140deg, rgba(255,252,247,0.9), rgba(255,244,232,0.78)) !important;
+  border-color: rgba(110,60,15,0.14) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 1px 2px rgba(80,40,0,.06), 0 14px 40px -18px rgba(120,55,0,0.30) !important;
+}
+html.light .glass-strong {
+  background: linear-gradient(150deg, #fffcf8 0%, #fff4e8 100%) !important;
+  border-color: rgba(110,60,15,0.16) !important;
+  box-shadow: inset 0 1px 0 #fff, 0 30px 80px -24px rgba(120,55,0,0.35) !important;
+}
+html.light .liquid-pill { background: linear-gradient(180deg, rgba(255,251,245,.94), rgba(255,240,224,.86)) !important; border-color: rgba(110,60,15,.14) !important; }
+html.light .liquid-lens { background: linear-gradient(180deg, #ffe2c2, #ffd2a6) !important; border-color: rgba(214,100,0,.45) !important; }
+html.light .bg-space-900, html.light .bg-space-900\/80, html.light .bg-space-800 { background-color: #fffaf3 !important; }
+html.light .bg-space-950\/50, html.light .bg-space-950\/60, html.light .bg-space-950\/70 { background-color: rgba(250,236,220,.75) !important; }
+html.light .bg-neutral-50, html.light .bg-neutral-50\/50 { background-color: #fbefe2 !important; }
+html.light .bg-neutral-100, html.light .bg-neutral-100\/80, html.light .bg-neutral-100\/70 { background-color: #f5e3cf !important; }
+html.light .bg-neutral-200, html.light .bg-neutral-200\/80 { background-color: #ecd5bb !important; }
+html.light .text-muted-foreground { color: #5a4d42 !important; }
+html.light .text-neutral-600, html.light .text-neutral-500 { color: #4f4339 !important; }
+html.light .text-neutral-400 { color: #7a6b5d !important; }
+/* accents need to be darker on light surfaces */
+html.light .text-tangerine-100, html.light .text-tangerine-200, html.light .text-tangerine-300, html.light .text-tangerine-400,
+html.light .text-indigo-300, html.light .text-indigo-400, html.light .text-tangerine-300\/90 { color: #b04d00 !important; }
+html.light .text-emerald-100, html.light .text-emerald-200, html.light .text-emerald-300, html.light .text-emerald-400 { color: #046c4e !important; }
+html.light .text-rose-100, html.light .text-rose-200, html.light .text-rose-300, html.light .text-rose-400 { color: #b0123f !important; }
+html.light .bg-emerald-500\/20 { background-color: rgba(16,185,129,.16) !important; }
+html.light .bg-tangerine-500\/15, html.light .bg-tangerine-500\/20, html.light .bg-tangerine-500\/25 { background-color: rgba(254,133,0,.16) !important; }
+html.light .text-gradient { background-image: linear-gradient(100deg, #c45200 0%, #fe6a00 35%, #e0245e 70%, #c45200 100%); }
+/* white text on solid accent fills stays white */
+html.light .bg-indigo-600.text-white, html.light .bg-tangerine-500.text-white, html.light .bg-tangerine-600.text-white,
+html.light .bg-rose-500.text-white, html.light .bg-emerald-600.text-white, html.light [class*="from-tangerine"].text-white { color: #fff !important; }
+html.light .bg-neutral-950 { background-color: #22242f !important; }
+html.light .bg-neutral-950, html.light .bg-neutral-950 * { color: #f3ead8 !important; }
+/* constellation */
+html.light .react-flow__edge.edge-dim .react-flow__edge-path { stroke: rgba(150,72,10,0.38) !important; stroke-width: 1.2px !important; }
+html.light .react-flow__edge.edge-hot .react-flow__edge-path { stroke: rgba(214,92,0,0.95) !important; stroke-width: 2px !important; }
+html.light .rf-star-core { box-shadow: 0 0 0 1.5px rgba(150,60,0,.55), 0 4px 14px -2px rgba(200,80,0,.55) !important; }
+html.light .rf-star-glow { opacity: .55 !important; }
+html.light .rf-star-label { color: #1d1a17 !important; font-weight: 600; text-shadow: 0 1px 0 rgba(255,250,242,.9), 0 0 6px rgba(255,248,238,.95); }
+html.light .rf-star-score { color: #a54600 !important; font-weight: 600; }
+/* splash + landing helpers */
+.splash { background: #16171f; }
+.splash-ink { color: #fff; } .splash-muted { color: rgba(255,255,255,.55); }
+html.light .splash { background: #f6ebdf; }
+html.light .splash-ink { color: #17181f; } html.light .splash-muted { color: #6b5a4b; }
+.marquee-mask { -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+html.light .orbit-planet, html.light .splash-planet { background: #fe8500 !important; }
+.auth-card::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: conic-gradient(from var(--a, 0deg), transparent 0 70%, rgba(254,133,0,.9) 80%, rgba(255,59,102,.8) 88%, transparent 96%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: spin-a 5s linear infinite; }
+@property --a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@keyframes spin-a { to { --a: 360deg; } }
+@media (prefers-reduced-motion: reduce) { .auth-card::before { animation: none; } }
+/* light: any pale accent text (incl. /opacity variants) becomes a deep, readable tone */
+html.light [class*="text-tangerine-50"], html.light [class*="text-tangerine-100"], html.light [class*="text-tangerine-200"], html.light [class*="text-tangerine-300"], html.light [class*="text-tangerine-400"],
+html.light [class*="text-indigo-200"], html.light [class*="text-indigo-300"], html.light [class*="text-indigo-400"], html.light [class*="text-violet-300"], html.light [class*="text-amber-200"], html.light [class*="text-amber-300"] { color: #a84a00 !important; }
+html.light [class*="text-emerald-100"], html.light [class*="text-emerald-200"], html.light [class*="text-emerald-300"] { color: #046c4e !important; }
+html.light [class*="text-rose-100"], html.light [class*="text-rose-200"], html.light [class*="text-rose-300"] { color: #b0123f !important; }
+html.light [class*="text-sky-200"], html.light [class*="text-sky-300"] { color: #075985 !important; }
+/* light-mode performance: panels are near-opaque here, so skip costly live blurs/animations */
+html.light .glass, html.light .glass-strong, html.light .liquid-pill, html.light [class*="backdrop-blur"] { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+html.light .glass { background: linear-gradient(140deg, #fffbf6, #fff1e3) !important; }
+html.light .liquid-pill { background: linear-gradient(180deg, #fffaf4, #fff0e0) !important; }
+html.light .ambient .blob { animation: none !important; filter: none !important; display: none; }
+html.light .rf-star-glow { filter: none !important; }
+html.light .bg-black\/50, html.light .bg-black\/60 { background-color: rgba(60,35,15,.45) !important; }

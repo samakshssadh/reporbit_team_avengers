@@ -1,0 +1,124 @@
+{
+  "items": [
+    {
+      "id": "141829b3-b002-461f-959f-6274714158bb",
+      "name": "Python",
+      "slug": "python",
+      "category": "language",
+      "status": "learned",
+      "proficiency": 4,
+      "startedAt": "2025-09-05",
+      "learnedAt": "2026-01-03",
+      "notes": null,
+      "updatedAt": "2026-10-30T21:31:57.757Z"
+    },
+    {
+      "id": "364cfe99-5b91-4912-b9e0-905bdbb8af0a",
+      "name": "Git",
+      "slug": "git",
+      "category": "tool",
+      "status": "learned",
+      "proficiency": 3,
+      "startedAt": "2025-10-15",
+      "learnedAt": "2025-12-04",
+      "notes": null,
+      "updatedAt": "2026-10-30T21:31:57.757Z"
+    },
+    {
+      "id": "576f18f8-9465-4049-82b6-d66cc9e020a9",
+      "name": "HTML & CSS",
+      "slug": "html-css",
+      "category": "language",
+      "status": "learned",
+      "proficiency": 3,
+      "startedAt": "2025-12-04",
+      "learnedAt": "2026-01-23",
+      "notes": null,
+      "updatedAt": "2026-10-30T21:31:57.757Z"
+    },
+    {
+      "id": "c5dad330-1f17-40b1-a4d9-2c4b8179cba8",
+      "name": "JavaScript",
+      "slug": "javascript",
+      "category": "language",
+      "status": "learned",
+      "proficiency": 4,
+      "startedAt": "2026-01-03",
+      "learnedAt": "2026-04-23",
+      "notes": null,
+      "updatedAt": "2026-10-30T21:31:57.757Z"
+    },
+    {
+      "id": "2603fe8e-4a76-442d-9d1c-e86f779e364a",
+      "name": "SQL",
+      "slug": "sql",
+      "category": "language",
+      "status": "learned",
+      "proficiency": 3,
+      "startedAt": "2026-02-22",
+      "learnedAt": "2026-05-13",
+      "notes": null,
+      "updatedAt": "2026-10-30T21:31:57.757Z"
+    },
+    {
+      "id": "6a852137-fc75-4341-afc4-8a1d510d32f7",
+      "name": "Node.js",
+      "slug": "nodejs",
+      "category": "framework",
+      "status": "learned",
+      "proficiency": 3,
+      "startedAt": "2026-05-03",
+      "learnedAt": "2026-08-01",
+      "notes": null,
+      "updatedAt": "2026-10-30T21:31:57.757Z"
+    },
+    {
+      "id": "36b9b098-e83d-46d0-8618-874c94ef697e",
+      "name": "React",
+      "slug": "react",
+      "category": "framework",
+      "status": "learning",
+      "proficiency": 3,
+      "startedAt": "2026-06-02",
+      "learnedAt": null,
+      "notes": null,
+      "updatedAt": "2026-10-30T21:31:57.757Z"
+    },
+    {
+      "id": "ddc86fb5-6baf-4515-b1f6-26fd786dd633",
+      "name": "TypeScript",
+      "slug": "typescript",
+      "category": "language",
+      "status": "learning",
+      "proficiency": 3,
+      "startedAt": "2026-07-22",
+      "learnedAt": null,
+      "notes": null,
+      "updatedAt": "2026-10-30T21:31:57.757Z"
+    },
+    {
+      "id": "99b62572-e134-4315-a055-9724fa53922d",
+      "name": "PostgreSQL",
+      "slug": "postgresql",
+      "category": "database",
+      "status": "learning",
+      "proficiency": 2,
+      "startedAt": "2026-08-31",
+      "learnedAt": null,
+      "notes": null,
+      "updatedAt": "2026-10-30T21:31:57.757Z"
+    },
+    {
+      "id": "e685f691-3cff-40cb-8f9a-29523a093306",
+      "name": "Express",
+      "slug": "express",
+      "category": "framework",
+      "status": "learning",
+      "proficiency": 2,
+      "startedAt": "2026-09-20",
+      "learnedAt": null,
+      "notes": null,
+      "updatedAt": "2026-10-30T21:31:57.757Z"
+    }
+  ]
+}

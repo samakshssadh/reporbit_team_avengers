@@ -1,0 +1,20 @@
+{
+  "items": [
+    {
+      "id": "6f791b9b-3877-4139-8f9b-298b527a13b2",
+      "title": "Git Branching — Basic Branching and Merging",
+      "topic": "git",
+      "url": "https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging",
+      "kind": "guide",
+      "reviewedAt": null
+    },
+    {
+      "id": "5ac92c8e-feeb-4b59-9911-622a6d802264",
+      "title": "Pro Git book (free, official)",
+      "topic": "git",
+      "url": "https://git-scm.com/book/en/v2",
+      "kind": "book",
+      "reviewedAt": null
+    }
+  ]
+}

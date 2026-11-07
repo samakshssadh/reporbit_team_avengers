@@ -1,0 +1,33 @@
+{
+  "_note": "LABELLED FIXTURE for frontend development — shape is exactly what GET /api/issues returns, values are illustrative (not a real issue).",
+  "items": [
+    {
+      "id": "I_kwDOexample",
+      "owner": "example-org",
+      "repo": "widgets",
+      "number": 42,
+      "title": "Button component ignores disabled prop",
+      "url": "https://github.com/example-org/widgets/issues/42",
+      "body": "Steps to reproduce: ... Expected: ... Actual: ...",
+      "labels": ["good first issue", "bug"],
+      "languages": ["TypeScript"],
+      "state": "open",
+      "assignees": [],
+      "updatedAt": "2026-10-29T10:00:00Z",
+      "checkedAt": "2026-10-31T02:00:00Z",
+      "freshness": "live",
+      "matchedSkills": ["TypeScript", "React"],
+      "prerequisiteGaps": ["Docker"],
+      "fitReasons": ["Uses TypeScript, which you know", "Mentions React from your profile", "Maintainers labelled it as beginner-friendly", "Active in the last two weeks"],
+      "difficulty": { "level": "beginner", "rationale": "Estimated from labels and issue text: beginner label from maintainers. Not verified against the code." },
+      "uncertainty": ["Read the comments: another contributor may have claimed it without being assigned", "Unassigned does not guarantee the issue is available or that a PR will be accepted"],
+      "firstStep": { "text": "Read the issue and all its comments, then comment to ask a maintainer whether it is still open for you to work on.", "sourceIds": ["S1"] },
+      "sources": [{ "id": "S1", "title": "Issue #42: Button component ignores disabled prop", "url": "https://github.com/example-org/widgets/issues/42" }],
+      "ranking": { "score": 88, "breakdown": { "languageMatch": 30, "mentionedSkillMatch": 4, "gapPenalty": -6, "beginnerLabel": 20, "freshness": 15, "quietThread": 8, "clearBody": 7 } },
+      "comments": 2
+    }
+  ],
+  "nextCursor": "eyJwIjoyfQ",
+  "checkedAt": "2026-10-31T02:00:00Z",
+  "searchedLanguages": ["TypeScript", "JavaScript", "Python"]
+}
