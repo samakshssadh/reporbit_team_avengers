@@ -3,9 +3,10 @@ services:
     name: orbit-web
     runtime: node
     plan: free
+    region: singapore
     rootDir: backend
-    # Builds the frontend, places compiled assets into backend/public, then installs backend dependencies
-    buildCommand: node scripts/build-frontend.js && npm install --omit=dev
+    # Pre-built frontend is committed in backend/public, so only backend install is required
+    buildCommand: npm install
     startCommand: npm run migrate && npm run seed && npm start
     healthCheckPath: /api/health
     envVars:
@@ -15,12 +16,12 @@ services:
         value: production
       - key: COOKIE_SECURE
         value: "true"
-      - key: DATABASE_URL
-        sync: false
       - key: GEMMA_PROVIDER
         value: google
       - key: GEMMA_MODEL
         value: gemma-4-26b-a4b-it
+      - key: DATABASE_URL
+        sync: false
       - key: GOOGLE_API_KEY
         sync: false
       - key: GITHUB_TOKEN
