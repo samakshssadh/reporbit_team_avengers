@@ -73,7 +73,8 @@ Every stage of the hack night is kept, so you can see how Reporbit evolved:
 | [`v2/`](v2) | Reporbit 2 | Landing page, email/password accounts, onboarding, liquid-glass UI, Dummy PR, casual Orbit AI |
 | [`v3/`](v3) | Reporbit 3 | GitHub + GitLab + Bitbucket, ring constellation, profile page with heatmap & growth, caching for faster loads |
 | [`v4/`](v4) | Reporbit 4 | Dummy PR accepts project .zip uploads (no 500-line limit), Gemma 4 support |
-| [`v5/`](v5) | **Reporbit 5 (current)** | Light/Dark theme, Connect GitHub (verified contributions), Learn → tech stack, badge guide, instant GitHub repo search, personalised AI roadmaps, Connect-to-Orbit-AI, deletable chats, boot animation |
+| [`v5/`](v5) | Reporbit 5 | Light/Dark theme, Connect GitHub (verified contributions), Learn → tech stack, badge guide, instant GitHub repo search, personalised AI roadmaps, Connect-to-Orbit-AI, deletable chats, boot animation |
+| [`v6/`](v6) | **Reporbit 6 (current)** | Follow system, leaderboard, refresh for new repos, Google Gemma 4 settings, Vercel deployment that rebuilds the database automatically |
 
 `render.yaml` deploys **v5**.
 
@@ -84,7 +85,7 @@ Every stage of the hack night is kept, so you can see how Reporbit evolved:
 Requirements: **Node 20+**, **PostgreSQL 13+**, and Gemma via **Ollama** or a **Google AI Studio** key.
 
 ```bash
-cd v5/backend
+cd v6/backend
 cp .env.example .env      # set DATABASE_URL, Gemma settings, GITHUB_TOKEN (never commit .env)
 npm install
 npm run build:frontend    # compiles the React UI into backend/public
@@ -100,7 +101,7 @@ npm start                 # → http://localhost:4000
 
 Check that everything is up: `curl localhost:4000/api/health` should show `"database":"ready"` and `"gemma":"ready"`.
 
-**Deploy:** Render → *New → Blueprint* → this repo. `render.yaml` builds the frontend and starts the backend from `v5/backend`.
+**Deploy:** Render → *New → Blueprint* → this repo. `render.yaml` starts the backend (frontend is prebuilt in `backend/public`) from `v6/backend`.
 
 ---
 
@@ -125,4 +126,4 @@ Code: [MIT](LICENSE) · Model: Google Gemma under the [Gemma Terms of Use](https
 
 
 ## Deploy on Vercel (v6)
-Import this repo in Vercel, set **Root Directory = `v6`**, add a Neon Postgres database (sets `DATABASE_URL`) and the env vars `GEMMA_PROVIDER`, `GEMMA_MODEL`, `GOOGLE_API_KEY`, `GITHUB_TOKEN`, `COOKIE_SECURE=true`. Every push to `v6/` redeploys automatically.
+Import this repo in Vercel (leave **Root Directory empty** — the root `vercel.json` builds `v6/`), add a Neon Postgres database (sets `DATABASE_URL`) and the env vars `GEMMA_PROVIDER`, `GEMMA_MODEL`, `GOOGLE_API_KEY`, `GITHUB_TOKEN`, `COOKIE_SECURE=true`. Every push to `v6/` redeploys automatically.

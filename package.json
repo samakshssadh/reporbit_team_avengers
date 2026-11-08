@@ -1,0 +1,12 @@
+{
+  "name": "orbit-fullstack",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build"
+  },
+  "dependencies": {
+    "pg": "^8.13.0"
+  }
+}
