@@ -64,7 +64,7 @@ Reporbit finds real open-source repositories that match your skills (GitHub, Git
 
 ## 🗂️ Repository layout
 
-Every stage of the hack night is kept, so you can see how Reporbit evolved:
+Every stage of the hack night is kept, so you can see how Reporbit evolved. See **[CHANGELOG.md](CHANGELOG.md)** for every update and why it was made, and **[CONTRIBUTING.md](CONTRIBUTING.md)** for how to name and explain new updates.
 
 | Folder | Version | What it is |
 |---|---|---|
@@ -76,7 +76,7 @@ Every stage of the hack night is kept, so you can see how Reporbit evolved:
 | [`v5/`](v5) | Reporbit 5 | Light/Dark theme, Connect GitHub (verified contributions), Learn → tech stack, badge guide, instant GitHub repo search, personalised AI roadmaps, Connect-to-Orbit-AI, deletable chats, boot animation |
 | [`v6/`](v6) | **Reporbit 6 (current)** | Follow system, leaderboard, refresh for new repos, Google Gemma 4 settings, Vercel deployment that rebuilds the database automatically |
 
-`render.yaml` deploys **v5**.
+`render.yaml` deploys **v6**.
 
 ---
 
