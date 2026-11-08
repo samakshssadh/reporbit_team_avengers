@@ -1,12 +1,12 @@
 services:
   - type: web
-    name: orbit-team-avengers
+    name: orbit-web
     runtime: node
     plan: free
     region: singapore
     rootDir: v6/backend
-    # Compiles the React frontend, copies it into backend/public, then installs the backend.
-    buildCommand: cd ../frontend && npm ci --include=dev && npm run build && rm -rf ../backend/public && cp -r dist ../backend/public && cd ../backend && npm ci --omit=dev
+    # Pre-built frontend is committed in backend/public, so only backend install is required
+    buildCommand: npm install
     startCommand: npm run migrate && npm run seed && npm start
     healthCheckPath: /api/health
     envVars:
@@ -16,23 +16,13 @@ services:
         value: production
       - key: COOKIE_SECURE
         value: "true"
-      - key: DATABASE_URL
-        fromDatabase:
-          name: orbit-team-avengers-db
-          property: connectionString
       - key: GEMMA_PROVIDER
         value: google
       - key: GEMMA_MODEL
         value: gemma-4-26b-a4b-it
+      - key: DATABASE_URL
+        sync: false
       - key: GOOGLE_API_KEY
         sync: false
       - key: GITHUB_TOKEN
         sync: false
-
-databases:
-  - name: orbit-team-avengers-db
-    plan: free
-    region: singapore
-    databaseName: orbit
-    user: orbit
-    ipAllowList: []

@@ -55,6 +55,7 @@ export function redact(text) {
   return String(text)
     .replace(/(gh[pousr]_[A-Za-z0-9]{20,})/g, '[REDACTED]')
     .replace(/(AIza[0-9A-Za-z\-_]{20,})/g, '[REDACTED]')
+    .replace(/(AQ\.[0-9A-Za-z\-_]{20,})/g, '[REDACTED]')
     .replace(/(key=)[^&\s]+/gi, '$1[REDACTED]')
     .replace(/(postgres(?:ql)?:\/\/[^:]+:)[^@]+@/gi, '$1[REDACTED]@');
 }

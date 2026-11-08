@@ -35,10 +35,17 @@ export const config = {
   publicUrl: (env.PUBLIC_URL || '').replace(/\/$/, ''),
   githubApiUrl: (env.GITHUB_API_URL || 'https://api.github.com').replace(/\/$/, ''),
   gemma: {
-    provider: (env.GEMMA_PROVIDER || 'none').toLowerCase(),
-    model: env.GEMMA_MODEL || '',
+    provider: (() => {
+      const p = (env.GEMMA_PROVIDER || 'none').trim().toLowerCase();
+      if (p === 'auto') {
+        const key = (env.GOOGLE_API_KEY || env.GEMINI_API_KEY || '').trim();
+        return key ? 'google' : 'none';
+      }
+      return p;
+    })(),
+    model: (env.GEMMA_MODEL || (env.GEMMA_PROVIDER === 'google' ? 'gemma-3-27b-it' : '')).trim(),
     ollamaUrl: (env.OLLAMA_URL || 'http://localhost:11434').replace(/\/$/, ''),
-    googleApiKey: env.GOOGLE_API_KEY || '',
+    googleApiKey: (env.GOOGLE_API_KEY || env.GEMINI_API_KEY || '').trim(),
     timeoutMs: int(env.GEMMA_TIMEOUT_MS, 45000),
     googleBaseUrl: (env.GEMMA_GOOGLE_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta').replace(/\/$/, ''),
   },
@@ -50,7 +57,7 @@ export function validateConfig() {
   if (!['none', 'ollama', 'google'].includes(config.gemma.provider)) problems.push('GEMMA_PROVIDER must be none | ollama | google');
   if (config.gemma.provider !== 'none' && !config.gemma.model) problems.push('GEMMA_MODEL is required when GEMMA_PROVIDER is set');
   if (config.gemma.provider !== 'none' && !/gemma/i.test(config.gemma.model)) problems.push('GEMMA_MODEL must be a Gemma model id (this product requires Google Gemma)');
-  if (config.gemma.provider === 'google' && !config.gemma.googleApiKey) problems.push('GOOGLE_API_KEY is required for GEMMA_PROVIDER=google');
+  if (config.gemma.provider === 'google' && !config.gemma.googleApiKey) problems.push('GOOGLE_API_KEY (or GEMINI_API_KEY) is required for GEMMA_PROVIDER=google');
   if (problems.length) {
     const err = new Error('Invalid configuration:\n - ' + problems.join('\n - '));
     err.code = 'CONFIG';
