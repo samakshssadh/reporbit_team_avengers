@@ -115,6 +115,26 @@ export interface LearningStage {
   estimatedHours: string;
   videos: VideoResource[];
   websites: WebResource[];
+  /** Optional richer course content (used by the Python course). */
+  description?: string;
+  youCanNow?: string;
+  modules?: LearningModule[];
+  project?: string;
+  quiz?: QuizQuestion[];
+}
+
+export interface LearningModule {
+  id: string;
+  title: string;
+  topics: string[];
+  tryIt?: string;
+}
+
+export interface QuizQuestion {
+  q: string;
+  options: string[];
+  answer: number;
+  why: string;
 }
 
 export interface LearningPath {

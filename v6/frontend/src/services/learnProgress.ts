@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useApp } from "../context/AppContext";
 
 // Server-backed Learn progress. Finishing every stage of a subject adds it to the tech stack as "learned".
-export function useLearnProgress(subject: string | null, totalStages: number) {
+export function useLearnProgress(subject: string | null, totalStages: number, stageIds?: string[]) {
   const { refresh } = useAuth();
   const { showToast } = useApp();
   const [done, setDone] = useState<Set<string>>(new Set());
@@ -25,7 +25,7 @@ export function useLearnProgress(subject: string | null, totalStages: number) {
     const isDone = !done.has(stageId);
     setDone((prev) => { const n = new Set(prev); if (isDone) n.add(stageId); else n.delete(stageId); return n; });
     try {
-      const r = await api<{ subject: string; completed: boolean; addedToStack: boolean; upgraded: boolean }>("/me/learn/progress", { method: "POST", body: JSON.stringify({ subject, stageId, done: isDone, totalStages }) });
+      const r = await api<{ subject: string; completed: boolean; addedToStack: boolean; upgraded: boolean }>("/me/learn/progress", { method: "POST", body: JSON.stringify({ subject, stageId, done: isDone, totalStages, ...(stageIds?.length ? { stageIds } : {}) }) });
       if (r.completed && (r.addedToStack || r.upgraded)) {
         showToast(`🎉 You completed ${r.subject}! It's now in your tech stack as learned.`);
         setLearnedSkills((l) => [...new Set([...l, r.subject])]);
@@ -38,5 +38,7 @@ export function useLearnProgress(subject: string | null, totalStages: number) {
   };
 
   const isLearned = !!subject && learnedSkills.some((s) => s.toLowerCase() === subject.toLowerCase());
-  return { done, toggle, isLearned, completedCount: done.size };
+  // Count only the stages of the current course (older stage ids are ignored).
+  const completedCount = stageIds?.length ? stageIds.filter((id) => done.has(id)).length : done.size;
+  return { done, toggle, isLearned, completedCount };
 }

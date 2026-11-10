@@ -1,5 +1,6 @@
 import { Repository, ContributionRoadmap, LearningPath, GitCurriculumTopic, ChatMessage, UserProfile } from "../types";
 import { MOCK_REPOSITORIES, getOrCreateRoadmap, GIT_CURRICULUM, MOCK_LANGUAGE_PATHS } from "../data/mockData";
+import { PYTHON_COURSE } from "../data/pythonCourse";
 import { track } from "./track";
 
 export interface ApiStatus {
@@ -204,7 +205,7 @@ class OrbitApiService {
       }
     }
 
-    const matched = MOCK_LANGUAGE_PATHS[key];
+    const matched = key === "python" ? PYTHON_COURSE : MOCK_LANGUAGE_PATHS[key];
     if (matched) {
       return { data: matched, isMock: true };
     }

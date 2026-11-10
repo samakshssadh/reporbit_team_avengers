@@ -11,6 +11,10 @@ Newest first. Each version's code lives in its own folder (`v0/` … `v6/`).
 
 ## Version 6 (folder `v6/`, current)
 
+### 6.7: Python learning experience improved
+- **What:** A complete Python course (Python 3.14 or newer) in Learn → Languages. Six stages: setup, fundamentals, functions and recursion, object-oriented design and data modelling, data science (NumPy, Pandas, charts) and contributor skills. Each stage has a description, a "by the end you can" goal, modules with topics and "try it" tasks, a project, videos and websites, and a 3-question stage check. Stage 1 includes a built-in functions cheat sheet.
+- **Why:** The old Python path had only 3 short stages and could be "completed" by ticking boxes. Now a stage completes only when its check is passed, and progress from the old course no longer counts towards the new one.
+
 ### 6.6: Clear update notes
 - **What:** Added this changelog and a guide for writing update notes (`CONTRIBUTING.md`).
 - **Why:** So anyone, even someone new to the project, can understand every update and the reason for it.

@@ -4,6 +4,7 @@ import { LearningPath, LearningStage } from "../../types";
 import { apiService } from "../../services/api";
 import { useLearnProgress } from "../../services/learnProgress";
 import { VideoResourceCard, WebResourceCard } from "./ResourceCard";
+import { StageCourseContent } from "./StageCourseContent";
 import {
   Search,
   BookOpen,
@@ -17,7 +18,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-const POPULAR_SHORTCUTS = ["Python", "TypeScript", "Go", "Rust", "JavaScript"];
+const POPULAR_SHORTCUTS = ["Python", "JavaScript", "TypeScript", "Go", "Rust"];
 
 interface LearnLanguagesProps {
   onAskAI: (subject: string, stage?: LearningStage) => void;
@@ -31,7 +32,7 @@ export const LearnLanguages: React.FC<LearnLanguagesProps> = ({ onAskAI }) => {
   const [error, setError] = useState<string | null>(null);
   const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
 
-  const progress = useLearnProgress(learningPath?.subject || null, learningPath?.stages.length || 0);
+  const progress = useLearnProgress(learningPath?.subject || null, learningPath?.stages.length || 0, learningPath?.stages.map((st) => st.id));
 
   // Request cancellation / stale response protection
   const activeControllerRef = useRef<AbortController | null>(null);
@@ -197,7 +198,7 @@ export const LearnLanguages: React.FC<LearnLanguagesProps> = ({ onAskAI }) => {
           <div className="rounded-2xl glass p-4 flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex-1">
               <p className="text-sm text-white font-medium">
-                {progress.isLearned ? `✅ ${learningPath.subject} is in your tech stack as learned` : `Finish all ${learningPath.stages.length} stages to add ${learningPath.subject} to your tech stack`}
+                {progress.isLearned ? `✅ ${learningPath.subject} is in your tech stack as learned` : `${learningPath.stages.some((st) => st.quiz?.length) ? "Pass every stage check" : `Finish all ${learningPath.stages.length} stages`} to add ${learningPath.subject} to your tech stack`}
               </p>
               <div className="mt-2 h-2 rounded-full bg-white/10 overflow-hidden">
                 <motion.div className="h-full bg-gradient-to-r from-tangerine-400 to-rose-500" initial={false} animate={{ width: `${Math.round((progress.completedCount / Math.max(1, learningPath.stages.length)) * 100)}%` }} />
@@ -230,9 +231,9 @@ export const LearnLanguages: React.FC<LearnLanguagesProps> = ({ onAskAI }) => {
                   >
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="flex items-center gap-2">
-                        <button type="button" onClick={(e) => { e.stopPropagation(); progress.toggle(stage.id); }}
+                        <button type="button" onClick={(e) => { e.stopPropagation(); if (stage.quiz?.length && !progress.done.has(stage.id)) { setSelectedStageId(stage.id); setTimeout(() => document.getElementById(`quiz-${stage.id}`)?.scrollIntoView({ behavior: "smooth", block: "center" }), 150); return; } progress.toggle(stage.id); }}
                           className={`w-5 h-5 rounded-full border flex items-center justify-center transition ${progress.done.has(stage.id) ? "bg-emerald-500 border-emerald-400 text-white" : "border-white/25 hover:border-tangerine-400"}`}
-                          aria-label={progress.done.has(stage.id) ? `Mark stage ${stage.stageNumber} as not done` : `Mark stage ${stage.stageNumber} as done`} title="Mark stage complete">
+                          aria-label={progress.done.has(stage.id) ? `Mark stage ${stage.stageNumber} as not done` : `Mark stage ${stage.stageNumber} as done`} title={stage.quiz?.length && !progress.done.has(stage.id) ? "Pass the stage check to complete" : "Mark stage complete"}>
                           {progress.done.has(stage.id) && <CheckCircle2 className="w-3.5 h-3.5" />}
                         </button>
                         <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300">
@@ -279,10 +280,14 @@ export const LearnLanguages: React.FC<LearnLanguagesProps> = ({ onAskAI }) => {
                   </button>
                 </div>
 
+                {selectedStage.modules && selectedStage.modules.length > 0 && (
+                  <StageCourseContent stage={selectedStage} done={progress.done.has(selectedStage.id)} onPassed={() => progress.toggle(selectedStage.id)} />
+                )}
+
                 {/* Core Concepts */}
                 <div>
                   <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-                    Core Architectural Concepts
+                    Key concepts
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {selectedStage.concepts.map((concept, idx) => (

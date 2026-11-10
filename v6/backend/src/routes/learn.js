@@ -20,6 +20,8 @@ export function learnRoutes(r) {
       stageId: v.string({ min: 1, max: 80 }),
       done: v.bool(),
       totalStages: v.int({ min: 1, max: 50 }),
+      // Optional: the current stage ids. Only these count, so stages from an older version of a course are ignored.
+      stageIds: v.array(v.string({ min: 1, max: 80 }), { max: 50, optional: true }),
     }), req.body);
     const skill = resolveSkill(b.subject);
     const subject = skill.name;
@@ -27,7 +29,8 @@ export function learnRoutes(r) {
       if (b.done) await c.query('INSERT INTO learn_progress (user_id, subject, stage_id) VALUES ($1,$2,$3) ON CONFLICT DO NOTHING', [req.user.id, subject, b.stageId]);
       else await c.query('DELETE FROM learn_progress WHERE user_id = $1 AND subject = $2 AND stage_id = $3', [req.user.id, subject, b.stageId]);
       const { rows } = await c.query('SELECT stage_id, completed_at FROM learn_progress WHERE user_id = $1 AND subject = $2 ORDER BY completed_at', [req.user.id, subject]);
-      const completed = rows.length >= b.totalStages;
+      const doneIds = new Set(rows.map((x) => x.stage_id));
+      const completed = b.stageIds?.length ? b.stageIds.every((id) => doneIds.has(id)) : rows.length >= b.totalStages;
       let addedToStack = false, upgraded = false;
       if (completed) {
         const { rows: ex } = await c.query('SELECT * FROM skills WHERE user_id = $1 AND slug = $2 FOR UPDATE', [req.user.id, skill.slug]);
